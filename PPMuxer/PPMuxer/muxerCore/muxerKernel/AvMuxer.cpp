@@ -121,9 +121,11 @@ int AvMuxer::initVideoEncdoe(int nWidth, int nHeight)
 {
     // 创建输出码流->创建了一块内存空间->并不知道他是什么类型流->希望他是视频流
     p_VideoStream = avformat_new_stream(p_FormatContext, NULL);
+    
     // 设置流的timebase
     p_VideoStream->time_base = (AVRational){1, pEncodeParam.pVideoOutFrameRate};
     p_VideoStream->duration = pDuration * AV_TIME_BASE;
+    
     // 获取编码器上下文
     p_VideoCodecContext = p_VideoStream->codec;
     
@@ -161,11 +163,15 @@ int AvMuxer::initVideoEncdoe(int nWidth, int nHeight)
         //value:slow->慢
         //value:superfast->超快
         av_dict_set(&param, "preset", "slow", 0);
+        // 量化比例的范围为0～51，其中0为无损模式，23为缺省值，51可能是最差的。该数字越小，图像质量越好。从主观上讲，18~28是一个合理的范围。18往往被认为从视觉上看是无损的，它的输出视频质量和输入视频一模一样或者说相差无几。但从技术的角度来讲，它依然是有损压缩。若Crf值加6，输出码率大概减少一半；若Crf值减6，输出码率翻倍。通常是在保证可接受视频质量的前提下选择一个最大的Crf值，如果输出视频质量很好，那就尝试一个更大的值，如果看起来很糟，那就尝试一个小一点值。
+        // 如果设置了AVCodecContext中bit_rate的大小，则采用abr的控制方式
+        // 如果没有设置AVCodecContext中的bit_rate，则默认按照crf方式编码，crf默认大小为23
         av_dict_set(&param, "crf", "28.0", 0);
         // 调优
         //key:tune->调优
         //value:zerolatency->零延迟
         av_dict_set(&param, "tune", "zerolatency", 0);
+        // H.264有四种画质级别,分别是baseline, extended, main, high：
         av_dict_set(&param, "profile", "main", 0);
 
     }
@@ -217,7 +223,7 @@ int AvMuxer::start()
     return 0;
 }
 
-int AvMuxer::stop()
+int AvMuxer::finish()
 {
     int ret = av_write_trailer(p_FormatContext);
     if (ret < 0) {
@@ -258,6 +264,7 @@ int AvMuxer::AllocFrame()
     p_AudioFrame->format = pEncodeParam.pAudioOutSample_fmt;
     p_AudioFrame->sample_rate = pEncodeParam.pAudioOutSampleRate;
     
+    // 使用该接口分配到的数据空间，是可复用的，即内部有引用计数（reference），本次对frame data使用完成，可以解除引用，av_frame_unref(AVFrame *frame)，调用后，引用计数减1，如果引用计数变为0，则释放data空间。
     ret = av_frame_get_buffer(p_AudioFrame, 0);
     if (ret < 0) {
         av_frame_free(&p_AudioFrame);
@@ -339,6 +346,11 @@ int AvMuxer::VideoEncode(AVFrame *frame)
             return -1;
         }
     } else {
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+            ;
+        } else {
+            printf("Error during encoding\n");
+        }
         free(en_pkt.data);
         av_packet_unref(&en_pkt);
         return -1;

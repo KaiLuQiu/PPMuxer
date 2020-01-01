@@ -66,7 +66,7 @@ public:
     /*
      * 结束编码
      */
-    int stop();
+    int finish();
     
     /*
      * 输入data进行video编码过程
