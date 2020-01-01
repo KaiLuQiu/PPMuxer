@@ -165,6 +165,10 @@ int AvMuxer::start()
 
 int AvMuxer::stop()
 {
+    int ret = av_write_trailer(p_FormatContext);
+    if (ret < 0) {
+        return -1;
+    }
     return 0;
 }
 
@@ -177,7 +181,35 @@ int AvMuxer::VideoEncode(const unsigned char *pdata)
 
 int AvMuxer::flushVideoEncode()
 {
-    return 0;
+    int ret = 0;
+    int got_frame;
+    if (!(p_FormatContext->streams[1]->codec->codec->capabilities &
+          AV_CODEC_CAP_DELAY))
+        return 0;
+    while (1) {
+        AVPacket enc_pkt;
+        enc_pkt.data = NULL;
+        enc_pkt.size = 0;
+        av_init_packet(&enc_pkt);
+        
+        ret = avcodec_encode_video2(p_FormatContext->streams[1]->codec, &enc_pkt,
+                                    NULL, &got_frame);
+        av_frame_free(NULL);
+        if (ret < 0)
+            break;
+        if (!got_frame) {
+            ret = 0;
+            break;
+        }
+        enc_pkt.stream_index = 1;
+        enc_pkt.duration = pDuration;
+        /* mux encoded frame */
+        ret = av_interleaved_write_frame(p_FormatContext, &enc_pkt);
+        if (ret < 0)
+            break;
+        av_free_packet(&enc_pkt);
+    }
+    return ret;
 }
 
 
