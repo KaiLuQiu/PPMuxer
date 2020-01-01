@@ -18,7 +18,11 @@ p_VideoFrame(NULL),
 p_SwsContex(NULL),
 pCurVideoFrameIndex(0),
 pDuration(0),
-pFileName(NULL)
+pFileName(NULL),
+pWidth(0),
+pHeight(0),
+pVideoStreamIndex(1),
+pAudioStreamIndex(0)
 {
 
 }
@@ -48,10 +52,17 @@ AvMuxer::~AvMuxer()
     }
 }
 
+void AvMuxer::initEncodeOutputParam(EncodeParam param)
+{
+    pEncodeParam = param;
+}
+
 int AvMuxer::init(const char * fileName, int nWidth, int nHeight)
 {
+    int ret;
     pFileName = fileName;
-
+    pWidth = nWidth;
+    pHeight = nHeight;
     // 注册编码器、解码器等
     av_register_all();
 
@@ -74,25 +85,45 @@ int AvMuxer::init(const char * fileName, int nWidth, int nHeight)
         return -1;
     }
     
+    ret = initVideoEncdoe(nWidth, nHeight);
+    if (ret < 0) {
+        return -1;
+    }
+
+    ret = initAudioEncdoe();
+    if (ret < 0) {
+        return -1;
+    }
+    
+    ret = allocVideoFrame();
+    if (ret < 0) {
+        return -1;
+    }
+    
+    return 0;
+}
+
+int AvMuxer::initVideoEncdoe(int nWidth, int nHeight)
+{
     // 创建输出码流->创建了一块内存空间->并不知道他是什么类型流->希望他是视频流
     p_VideoStream = avformat_new_stream(p_FormatContext, NULL);
     // 设置流的timebase
-    p_VideoStream->time_base = (AVRational){1, 24};
+    p_VideoStream->time_base = (AVRational){1, pEncodeParam.pVideoOutFrameRate};
     
     // 获取编码器上下文
     p_VideoCodecContext = p_VideoStream->codec;
     
     p_VideoCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
-    p_VideoCodecContext->pix_fmt = AV_PIX_FMT_YUV420P;
-    p_VideoCodecContext->width = nWidth;
-    p_VideoCodecContext->height = nHeight;
+    p_VideoCodecContext->pix_fmt = pEncodeParam.pVideoOutPixelFormat;
+    p_VideoCodecContext->width = pEncodeParam.pVideoOutWidth;
+    p_VideoCodecContext->height = pEncodeParam.pVideoOutHeight;
     
     p_VideoCodecContext->time_base.num = 1;
     
     // 设置帧率（目前先写固定值）
-    p_VideoCodecContext->time_base.den = 24;
+    p_VideoCodecContext->time_base.den = pEncodeParam.pVideoOutFrameRate;
     
-    p_VideoCodecContext->codec_id = AV_CODEC_ID_H264;
+    p_VideoCodecContext->codec_id = pEncodeParam.pVideoOutCodecId;
     
     p_VideoCodecContext->gop_size = 250;
     p_VideoCodecContext->max_qdiff = 4;
@@ -127,11 +158,15 @@ int AvMuxer::init(const char * fileName, int nWidth, int nHeight)
     if (avcodec_open2(p_VideoCodecContext, avcodec, &param) < 0) {
         return -1;
     }
-    allocFrame();
     return 0;
 }
 
-int AvMuxer::allocFrame()
+int AvMuxer::initAudioEncdoe()
+{
+    return 0;
+}
+
+int AvMuxer::allocVideoFrame()
 {
     if (p_VideoFrame) {
         av_frame_free(&p_VideoFrame);
@@ -144,7 +179,7 @@ int AvMuxer::allocFrame()
 
     p_VideoFrame->width = p_VideoCodecContext->width;
     p_VideoFrame->height = p_VideoCodecContext->height;
-    p_VideoFrame->format = AV_PIX_FMT_YUV420P;
+    p_VideoFrame->format = pEncodeParam.pVideoOutPixelFormat;
     
     int ret = av_frame_get_buffer(p_VideoFrame, 0);
     if (ret < 0) {
@@ -174,16 +209,88 @@ int AvMuxer::stop()
 
 int AvMuxer::VideoEncode(const unsigned char *pdata)
 {
-    return 0;
-
+    int ret;
+    if (NULL == pdata) {
+        return -1;
+    }
+    data2Frame(pdata, p_VideoFrame);
+    ret = VideoEncode(p_VideoFrame);
+    return ret;
 }
 
+int AvMuxer::VideoEncode(AVFrame *frame)
+{
+    AVPacket en_pkt;
+    av_init_packet(&en_pkt);
+    
+    int ret = avcodec_send_frame(p_VideoCodecContext, p_VideoFrame);
+    if (ret < 0) {
+        free(en_pkt.data);
+        av_packet_unref(&en_pkt);
+        return -1;
+    }
+        
+    ret = avcodec_receive_packet(p_VideoCodecContext, &en_pkt);
+    if(ret == 0) {
+        //编码成功
+        // 将视频压缩数据-写入到输出文件中-outFilePath;
+//        en_pkt.stream_index = av_video_stream->index;
+        en_pkt.stream_index = pVideoStreamIndex;
+        en_pkt.duration = pDuration;
+        int result = av_interleaved_write_frame(p_FormatContext, &en_pkt);
+        if (result < 0) {
+            free(en_pkt.data);
+            av_packet_unref(&en_pkt);
+            return -1;
+        }
+    } else {
+        free(en_pkt.data);
+        av_packet_unref(&en_pkt);
+        return -1;
+    }
+    free(en_pkt.data);
+    av_packet_unref(&en_pkt);
+    return 0;
+}
+
+int AvMuxer::data2Frame(const unsigned char *pdata, AVFrame *frame)
+{
+    if (NULL == p_SwsContex) {
+        return -1;
+    }
+    
+    AVFrame * tempFrame = av_frame_alloc();
+    tempFrame->format = pEncodeParam.pVideoInPixelFormat;
+    
+    avpicture_fill((AVPicture *)tempFrame, pdata, pEncodeParam.pVideoInPixelFormat, pWidth, pHeight);
+    
+    tempFrame->data[0] += tempFrame->linesize[0] * (pHeight - 1);
+    tempFrame->linesize[0] *= -1;
+    
+    sws_scale(p_SwsContex, tempFrame->data, tempFrame->linesize, 0, pHeight, frame->data, frame->linesize);
+    
+    frame->data[0] += frame->linesize[0] * (pEncodeParam.pVideoOutHeight - 1);
+    frame->linesize[0] *= -1;
+    frame->data[1] += frame->linesize[1] * ((pEncodeParam.pVideoOutHeight >> 1) - 1);
+    frame->linesize[1] *= -1;
+    frame->data[2] += frame->linesize[2] * ((pEncodeParam.pVideoOutHeight >> 1) - 1);
+    frame->linesize[2] *= -1;
+    
+    frame->pts = av_rescale_q(pCurVideoFrameIndex++, p_VideoCodecContext->time_base, p_VideoStream->time_base);
+    av_frame_free(&tempFrame);
+    return 0;
+}
+
+int AvMuxer::flushAudioEncode()
+{
+    return 0;
+}
 
 int AvMuxer::flushVideoEncode()
 {
     int ret = 0;
     int got_frame;
-    if (!(p_FormatContext->streams[1]->codec->codec->capabilities &
+    if (!(p_FormatContext->streams[pVideoStreamIndex]->codec->codec->capabilities &
           AV_CODEC_CAP_DELAY))
         return 0;
     while (1) {
@@ -192,7 +299,7 @@ int AvMuxer::flushVideoEncode()
         enc_pkt.size = 0;
         av_init_packet(&enc_pkt);
         
-        ret = avcodec_encode_video2(p_FormatContext->streams[1]->codec, &enc_pkt,
+        ret = avcodec_encode_video2(p_FormatContext->streams[pVideoStreamIndex]->codec, &enc_pkt,
                                     NULL, &got_frame);
         av_frame_free(NULL);
         if (ret < 0)
@@ -201,7 +308,7 @@ int AvMuxer::flushVideoEncode()
             ret = 0;
             break;
         }
-        enc_pkt.stream_index = 1;
+        enc_pkt.stream_index = pVideoStreamIndex;
         enc_pkt.duration = pDuration;
         /* mux encoded frame */
         ret = av_interleaved_write_frame(p_FormatContext, &enc_pkt);
@@ -211,7 +318,5 @@ int AvMuxer::flushVideoEncode()
     }
     return ret;
 }
-
-
 
 NS_MEDIA_END
