@@ -1,1 +1,1 @@
-# video2str
+# PPMuxer
