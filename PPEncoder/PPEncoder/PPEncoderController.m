@@ -11,8 +11,6 @@
 #import <AVFoundation/AVFoundation.h>
 #import <GameController/GameController.h>
 #import <CoreMotion/CoreMotion.h>
-#import "OpenGLView.h"
-#include "render_frame.h"
 #include "EncoderMidlle.h"
 
 @interface PPEncoderController (){

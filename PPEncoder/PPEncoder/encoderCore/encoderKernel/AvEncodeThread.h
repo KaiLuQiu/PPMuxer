@@ -10,7 +10,9 @@
 #define AvEncodeThread_H
 #include "MediaCommon.h"
 NS_MEDIA_BEGIN
-
-
+class AvEncodeThread
+{
+    
+};
 NS_MEDIA_END
 #endif // AvEncodeThread_H
