@@ -12,6 +12,7 @@
 #import <GameController/GameController.h>
 #import <CoreMotion/CoreMotion.h>
 #include "PPEncoderMidlle.h"
+#include "PPEncoderParam.h"
 
 @interface PPEncoderController (){
     PPEncoderMidlle             *_encoder;
@@ -34,7 +35,8 @@
     [self InitButton];
     
     NSString* path = [self getFileFromMainbundleAbsolutePath:@"video/hiphop.mp4"];
-    _encoder = [[PPEncoderMidlle alloc] initPlayer:[path UTF8String]];
+    const char *outFilePath = [[[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:@"bboy.mp4"] cStringUsingEncoding:NSUTF8StringEncoding];    
+    _encoder = [[PPEncoderMidlle alloc] initEncoder:[path UTF8String] FilePath:outFilePath];
     
     // 设置监听器
     [self setPlayerStateListener];

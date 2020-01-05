@@ -13,7 +13,9 @@ PPEncoder* PPEncoder::p_Encoder = nullptr;
 // 类的静态指针需要在此初始化
 SDL_mutex* PPEncoder::p_Mutex = SDL_CreateMutex();
 
-PPEncoder::PPEncoder()
+PPEncoder::PPEncoder():
+pUrl(""),
+pOutFilePath("")
 {
     p_Handler = NULL;
     pPlayerContext = new (std::nothrow)PlayerContext();
@@ -69,6 +71,16 @@ void PPEncoder::setDataSource(std::string url)
     pUrl = url;
 }
 
+void PPEncoder::setOutFilePath(std::string path)
+{
+    pOutFilePath = path;
+}
+
+void PPEncoder::setEncodeParam(EncodeParam &params)
+{
+    pEncodeParams = params;
+}
+
 bool PPEncoder::prepareAsync()
 {
     if (NULL == p_Handler && NULL == pPlayerContext) {
@@ -90,11 +102,14 @@ bool PPEncoder::prepareAsync()
         p_VideoDecoderThread->init(pPlayerContext, p_Handler, p_MediaCore);
         // 初始化videodecoder，主要是startPacketQueue
         p_AudioDecoderThread->init(pPlayerContext, p_Handler, p_MediaCore);
+        
+        p_EncoderThread->init(pPlayerContext, p_Handler, pEncodeParams, pOutFilePath.c_str());
         // 开启demuxer线程读取数据包
         p_DemuxerThread->start();
         // videoDecode和audioDecode可以在prepareAsync的时候就开启，当显示线程则不可。为了加快第一帧的show
         p_VideoDecoderThread->start();
         p_AudioDecoderThread->start();
+        p_EncoderThread->start();
     }
     // 这边一般要render第一帧之后才能上发prepared消息
     p_Handler->sendOnPrepared();

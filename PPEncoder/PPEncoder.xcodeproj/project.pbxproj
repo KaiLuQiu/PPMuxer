@@ -36,6 +36,7 @@
 		36676CE123C1928000AF7208 /* Message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CDD23C1928000AF7208 /* Message.cpp */; };
 		36676CE223C1928000AF7208 /* EventHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CE023C1928000AF7208 /* EventHandler.cpp */; };
 		36676CE623C1930E00AF7208 /* PPEncoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CE423C1930E00AF7208 /* PPEncoder.cpp */; };
+		36676CEA23C2154B00AF7208 /* PPEncoderParam.mm in Sources */ = {isa = PBXBuildFile; fileRef = 36676CE923C2154B00AF7208 /* PPEncoderParam.mm */; };
 		36E3120323BC426200CA5B44 /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 36E3120223BC426200CA5B44 /* opencv2.framework */; };
 		36E3128623BC429E00CA5B44 /* libavutil.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 36E3127F23BC429E00CA5B44 /* libavutil.a */; };
 		36E3128723BC429E00CA5B44 /* libavfilter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 36E3128023BC429E00CA5B44 /* libavfilter.a */; };
@@ -209,6 +210,8 @@
 		36676CE423C1930E00AF7208 /* PPEncoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PPEncoder.cpp; sourceTree = "<group>"; };
 		36676CE523C1930E00AF7208 /* PPEncoder_C_Interface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPEncoder_C_Interface.h; sourceTree = "<group>"; };
 		36676CE723C1978200AF7208 /* PPEncoderDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPEncoderDelegate.h; sourceTree = "<group>"; };
+		36676CE823C2154B00AF7208 /* PPEncoderParam.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPEncoderParam.h; sourceTree = "<group>"; };
+		36676CE923C2154B00AF7208 /* PPEncoderParam.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PPEncoderParam.mm; sourceTree = "<group>"; };
 		36C7A73B238C0C14003250C1 /* OpenGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenGLView.h; sourceTree = "<group>"; };
 		36C7A73C238C0C14003250C1 /* OpenGLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OpenGLView.m; sourceTree = "<group>"; };
 		36E3120223BC426200CA5B44 /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = opencv2.framework; path = PPEncoder/opencv2.framework; sourceTree = "<group>"; };
@@ -602,6 +605,8 @@
 		36676C9623BF8C9E00AF7208 /* ios */ = {
 			isa = PBXGroup;
 			children = (
+				36676CE823C2154B00AF7208 /* PPEncoderParam.h */,
+				36676CE923C2154B00AF7208 /* PPEncoderParam.mm */,
 				36676CE723C1978200AF7208 /* PPEncoderDelegate.h */,
 				36676CA223BF8CDD00AF7208 /* PPEncoderMidlle.h */,
 				36676CA323BF8CDD00AF7208 /* PPEncoderMidlle.mm */,
@@ -1094,6 +1099,7 @@
 				36676CD123BF920A00AF7208 /* AudioDecodeThread.cpp in Sources */,
 				36FAD2D623B89A66007B4144 /* UIImage+fixOrientation.m in Sources */,
 				36676CCE23BF920A00AF7208 /* PacketQueueFunc.cpp in Sources */,
+				36676CEA23C2154B00AF7208 /* PPEncoderParam.mm in Sources */,
 				36676CA023BF8C9F00AF7208 /* AvEncodeThread.cpp in Sources */,
 				36FAD2D523B89A66007B4144 /* WPFunctionView.m in Sources */,
 				36676CA423BF8CDD00AF7208 /* PPEncoderMidlle.mm in Sources */,

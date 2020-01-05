@@ -26,12 +26,18 @@
 
 @implementation PPEncoderMidlle
 
--(id) initPlayer:(const char*)URL {
+-(id) initEncoder:(const char*)URL
+         FilePath:(const char*)FilePath
+{
     if(!(self = [super init])) {
         return nil;
     }
     media::PPEncoder::getInstance()->setDataSource(URL);
+    media::PPEncoder::getInstance()->setOutFilePath(FilePath);
     
+    EncodeParam params;
+    media::PPEncoder::getInstance()->setEncodeParam(params);
+
     self.pMsgLoopCallback = msg_loop;
     
     self.pHandler = new (std::nothrow)media::EventHandler();

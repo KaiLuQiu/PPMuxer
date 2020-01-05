@@ -16,7 +16,7 @@ pPause(false)
 {
     pPlayerContext = NULL;
     pHandler = NULL;
-    pEncoder == new (std::nothrow)AvEncoder();
+    pEncoder = new (std::nothrow)AvEncoder();
     if(!pEncoder) {
         printf("AvEncodeThread: new pEncoder fail!!! \n");
     }
@@ -45,9 +45,8 @@ bool AvEncodeThread::init(PlayerContext *playerContext, EventHandler *handler, E
     int nWidth = playerContext->width;
     int nHeight = playerContext->height;
     
-    pEncoder->init(outFile, nWidth, nHeight, duration);
+    pEncoder->init(outFile, nWidth, nHeight, duration, params);
     
-    pEncoder->initEncodeOutputParam(params);
     return true;
 }
 
@@ -125,12 +124,10 @@ void AvEncodeThread::run()
         // 说明当前存在视频流
         if (pPlayerContext->ic->streams[pPlayerContext->audioStreamIndex])
         {
-            Frame *pFrame = NULL;
-            av_frame_ref(getOneValidAudioFrame()->frame, pFrame->frame);
+            Frame *pFrame = getOneValidAudioFrame();
             if(NULL == pFrame) {
                 continue;
             }
-            av_frame_unref(pFrame->frame);
         }
     }
 }

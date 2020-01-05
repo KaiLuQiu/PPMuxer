@@ -19,12 +19,8 @@ public:
     /*
      * AvEncoder初始化
      */
-    int init(const char * fileName, int nWidth, int nHeight, int duration);
+    int init(const char* fileName, int nWidth, int nHeight, int duration, EncodeParam param);
     
-    /*
-     * 设置解码输出参数
-     */
-    void initEncodeOutputParam(EncodeParam param);
     /*
      * 开始编码
      */

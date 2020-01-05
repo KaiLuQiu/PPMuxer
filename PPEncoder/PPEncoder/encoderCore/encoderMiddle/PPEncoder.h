@@ -44,6 +44,9 @@ public:
      */
     void setDataSource(std::string url);
     
+    void setOutFilePath(std::string path);
+    
+    void setEncodeParam(EncodeParam &params);
     /*
      * 执行播放器的prepareAsync状态，此过程会开启demuxer, audiodecode videodecode等线程。做好初始化工作。
      */
@@ -108,10 +111,11 @@ public:
      */
     virtual ~PPEncoder();
 private:
-    std::string pUrl;
+    std::string         pUrl;
+    std::string         pOutFilePath;
+    EncodeParam         pEncodeParams;
     static SDL_mutex    *p_Mutex;
     static PPEncoder    *p_Encoder;
-
     PlayerContext       *pPlayerContext;
     EventHandler        *p_Handler;
     mediaCore           *p_MediaCore;

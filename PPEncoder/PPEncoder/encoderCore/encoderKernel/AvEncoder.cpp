@@ -61,20 +61,16 @@ AvEncoder::~AvEncoder()
     }
 }
 
-void AvEncoder::initEncodeOutputParam(EncodeParam param)
-{
-    pEncodeParam = param;
-}
-
-int AvEncoder::init(const char * fileName, int nWidth, int nHeight, int duration)
+int AvEncoder::init(const char* fileName, int nWidth, int nHeight, int duration, EncodeParam param)
 {
     int ret;
     pFileName = fileName;
     pWidth = nWidth;
     pHeight = nHeight;
     pDuration = duration;
-    // 注册编码器、解码器等
-    av_register_all();
+    pEncodeParam = param;
+//     注册编码器、解码器等
+//    av_register_all();
 
     // alloc avformat上下文
     p_FormatContext = avformat_alloc_context();
@@ -91,7 +87,7 @@ int AvEncoder::init(const char * fileName, int nWidth, int nHeight, int duration
         }
     }
     
-    if (p_OutFormat->video_codec != AV_CODEC_ID_NONE) {
+    if (p_OutFormat->video_codec == AV_CODEC_ID_NONE) {
         return -1;
     }
     

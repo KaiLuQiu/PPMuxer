@@ -22,7 +22,8 @@
 @property (nonatomic, assign) id <OnErrorListener> pErrorListener;
 @property (nonatomic, assign) id <OnInfoListener> pInfoListener;
 
--(id) initPlayer:(const char*)URL;
+-(id) initEncoder:(const char*)URL
+         FilePath:(const char*)FilePath;
 
 -(void)prepareAsync;
 

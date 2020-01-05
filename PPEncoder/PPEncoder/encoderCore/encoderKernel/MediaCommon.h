@@ -334,7 +334,5 @@ typedef struct EncodeParam_T{
     int             pAudioOutSampleRate;
     AVSampleFormat  pAudioOutSample_fmt;
 }EncodeParam;
-
-
 #endif
 
