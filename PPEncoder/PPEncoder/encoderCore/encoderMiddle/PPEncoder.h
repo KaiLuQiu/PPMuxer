@@ -2,8 +2,8 @@
 //  PPEncoder.h
 //  PPEncoder
 //
-//  Created by 邱开禄 on 2019/11/14.
-//  Copyright © 2019 邱开禄. All rights reserved.
+//  Created by 邱开禄 on 2020/01/05.
+//  Copyright © 2020 邱开禄. All rights reserved.
 //
 
 #ifndef PPEncoder_H
@@ -14,6 +14,7 @@
 #include "Demuxthread.h"
 #include "VideoDecodeThread.h"
 #include "AudioDecodeThread.h"
+#include "AvEncodeThread.h"
 #include "EventHandler.h"
 
 NS_MEDIA_BEGIN
@@ -109,13 +110,15 @@ public:
 private:
     std::string pUrl;
     static SDL_mutex    *p_Mutex;
-    PlayerContext       *pPlayerContext;
     static PPEncoder    *p_Encoder;
+
+    PlayerContext       *pPlayerContext;
     EventHandler        *p_Handler;
     mediaCore           *p_MediaCore;
     VideoDecodeThread   *p_VideoDecoderThread;
     DemuxThread         *p_DemuxerThread;
     AudioDecodeThread   *p_AudioDecoderThread;
+    AvEncodeThread      *p_EncoderThread;
 };
 
 NS_MEDIA_END

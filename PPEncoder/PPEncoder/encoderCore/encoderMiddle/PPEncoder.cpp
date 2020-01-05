@@ -1,9 +1,9 @@
 //
-//  PPlayer.cpp
-//  PPlayer
+//  PPEncoder.cpp
+//  PPEncoder
 //
-//  Created by 邱开禄 on 2019/11/14.
-//  Copyright © 2019 邱开禄. All rights reserved.
+//  Created by 邱开禄 on 2020/01/05.
+//  Copyright © 2020 邱开禄. All rights reserved.
 //
 
 #include "PPEncoder.h"
@@ -18,28 +18,33 @@ PPEncoder::PPEncoder()
     p_Handler = NULL;
     pPlayerContext = new (std::nothrow)PlayerContext();
     if (NULL == pPlayerContext) {
-        printf("PPlayer: new playerInfo fail!!! \n");
+        printf("PPEncoder: new playerInfo fail!!! \n");
     }
     pPlayerContext->volumeValue = 50.0;
     
     p_VideoDecoderThread = new (std::nothrow)VideoDecodeThread();
     if (NULL == p_VideoDecoderThread) {
-        printf("PPlayer: new VideoDecodeThread fail!!! \n");
+        printf("PPEncoder: new VideoDecodeThread fail!!! \n");
     }
     
     p_DemuxerThread = new (std::nothrow)DemuxThread();
     if (NULL == p_DemuxerThread) {
-        printf("PPlayer: new DemuxThread fail!!! \n");
+        printf("PPEncoder: new DemuxThread fail!!! \n");
     }
     
     p_AudioDecoderThread = new (std::nothrow)AudioDecodeThread();
     if (NULL == p_AudioDecoderThread) {
-        printf("PPlayer: new AudioDecodeThread fail!!! \n");
+        printf("PPEncoder: new AudioDecodeThread fail!!! \n");
+    }
+    
+    p_EncoderThread = new (std::nothrow)AvEncodeThread();
+    if (NULL == p_EncoderThread) {
+        printf("PPEncoder: new mediaCore fail!!! \n");
     }
     
     p_MediaCore = new (std::nothrow)mediaCore();
     if (NULL == p_MediaCore) {
-        printf("PPlayer: new mediaCore fail!!! \n");
+        printf("PPEncoder: new mediaCore fail!!! \n");
     }
 }
 
@@ -50,6 +55,7 @@ PPEncoder::~PPEncoder()
     SAFE_DELETE(p_DemuxerThread);
     SAFE_DELETE(p_AudioDecoderThread);
     SAFE_DELETE(p_MediaCore);
+    SAFE_DELETE(p_EncoderThread);
 }
 
 void PPEncoder::setHandle(EventHandler *handle)

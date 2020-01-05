@@ -11,39 +11,6 @@
 #include "MediaCommon.h"
 
 NS_MEDIA_BEGIN
-typedef struct EncodeParam_T{
-    EncodeParam_T() {
-        pVideoInPixelFormat = AV_PIX_FMT_BGRA;
-        pVideoOutPixelFormat = AV_PIX_FMT_YUV420P;
-        pVideoOutCodecId = AV_CODEC_ID_H264;
-        pVideoOutFrameRate = 24;
-        pVideoOutWidth = 1080;
-        pVideoOutHeight = 1920;
-        pAudioOutChannels = 2;
-        pAudioOutChannelLayout = AV_CH_LAYOUT_STEREO;
-        pAudioOutCodecId = AV_CODEC_ID_AAC;
-        pAudioOutSampleSize = 1024;
-        pAudioOutSampleRate = 44100;
-        // float, planar
-        pAudioOutSample_fmt = AV_SAMPLE_FMT_FLTP;
-    }
-    ~EncodeParam_T() {
-        
-    }
-    AVPixelFormat   pVideoInPixelFormat;
-    AVPixelFormat   pVideoOutPixelFormat;
-    AVCodecID       pVideoOutCodecId;
-    int             pVideoOutFrameRate;
-    int             pVideoOutWidth;
-    int             pVideoOutHeight;
-    int             pAudioOutChannels;
-    uint64_t        pAudioOutChannelLayout;
-    AVCodecID       pAudioOutCodecId;
-    int             pAudioOutSampleSize;
-    int             pAudioOutSampleRate;
-    AVSampleFormat  pAudioOutSample_fmt;
-}EncodeParam;
-
 class AvEncoder {
 public:
     AvEncoder();
@@ -52,7 +19,7 @@ public:
     /*
      * AvEncoder初始化
      */
-    int init(const char * fileName, int nWidth, int nHeight);
+    int init(const char * fileName, int nWidth, int nHeight, int duration);
     
     /*
      * 设置解码输出参数
@@ -82,7 +49,6 @@ public:
      * 输入frame进行audio编码过程
      */
     int AudioEncode(AVFrame *frame);
-    
 private:
 
     /*

@@ -302,5 +302,39 @@ typedef struct DecoderContext_T {
     AVRational next_pts_tb;
 } DecoderContext;
 
+typedef struct EncodeParam_T{
+    EncodeParam_T() {
+        pVideoInPixelFormat = AV_PIX_FMT_BGRA;
+        pVideoOutPixelFormat = AV_PIX_FMT_YUV420P;
+        pVideoOutCodecId = AV_CODEC_ID_H264;
+        pVideoOutFrameRate = 24;
+        pVideoOutWidth = 1080;
+        pVideoOutHeight = 1920;
+        pAudioOutChannels = 2;
+        pAudioOutChannelLayout = AV_CH_LAYOUT_STEREO;
+        pAudioOutCodecId = AV_CODEC_ID_AAC;
+        pAudioOutSampleSize = 1024;
+        pAudioOutSampleRate = 44100;
+        // float, planar
+        pAudioOutSample_fmt = AV_SAMPLE_FMT_FLTP;
+    }
+    ~EncodeParam_T() {
+        
+    }
+    AVPixelFormat   pVideoInPixelFormat;
+    AVPixelFormat   pVideoOutPixelFormat;
+    AVCodecID       pVideoOutCodecId;
+    int             pVideoOutFrameRate;
+    int             pVideoOutWidth;
+    int             pVideoOutHeight;
+    int             pAudioOutChannels;
+    uint64_t        pAudioOutChannelLayout;
+    AVCodecID       pAudioOutCodecId;
+    int             pAudioOutSampleSize;
+    int             pAudioOutSampleRate;
+    AVSampleFormat  pAudioOutSample_fmt;
+}EncodeParam;
+
+
 #endif
 
