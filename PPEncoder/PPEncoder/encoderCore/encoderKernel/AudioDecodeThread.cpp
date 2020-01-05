@@ -7,7 +7,6 @@
 //
 #include "AudioDecodeThread.h"
 #include "FrameQueueFunc.h"
-#include "AvSyncClock.h"
 
 NS_MEDIA_BEGIN
 AudioDecodeThread::~AudioDecodeThread()
@@ -42,7 +41,7 @@ bool AudioDecodeThread::init(PlayerContext *playerContext, EventHandler *handler
     }
     
     // 初始化audio的同步时钟
-    AvSyncClock::init_clock(&pPlayerContext->AudioClock, &pPlayerContext->audioRingBuffer.serial);
+//    AvSyncClock::init_clock(&pPlayerContext->AudioClock, &pPlayerContext->audioRingBuffer.serial);
     return true;
     
 }

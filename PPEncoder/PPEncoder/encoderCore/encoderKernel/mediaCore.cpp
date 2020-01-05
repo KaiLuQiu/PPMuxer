@@ -79,7 +79,7 @@ bool mediaCore::StreamOpen(std::string pUrl)
         seek_by_bytes = !!(p_PlayerContext->ic->iformat->flags & AVFMT_TS_DISCONT) && strcmp("ogg", p_PlayerContext->ic->iformat->name);
     }
     
-    p_PlayerContext->max_frame_duration = (p_PlayerContext->ic->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0;
+//    p_PlayerContext->max_frame_duration = (p_PlayerContext->ic->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0;
     
     //dump avformat的相关信息
 #ifdef Debug

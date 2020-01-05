@@ -1,6 +1,6 @@
 //
 //  MediaCommon.h
-//  PPlayer
+//  PPEncoder
 //
 //  Created by 邱开禄 on 2019/11/14.
 //  Copyright © 2019 邱开禄. All rights reserved.
@@ -82,43 +82,6 @@ typedef enum {
 }PlayerState;
 
 
-typedef struct Clock_T {
-    Clock_T()
-    {
-        pts = 0.0;
-        pts_drift = 0.0;
-        last_updated = 0.0;
-        speed = 1.0;
-        serial = 0;
-        paused = 0;
-        queue_serial = NULL;
-    }
-    ~Clock_T()
-    {
-        pts = 0.0;
-        pts_drift = 0.0;
-        last_updated = 0.0;
-        speed = 1.0;
-        serial = 0;
-        paused = 0;
-        SAFE_DELETE(queue_serial);
-    }
-    // 显示时间戳，播放后，当前帧变成上一帧
-    double pts;
-    // 当前帧显示时间戳与当前系统时钟时间的差值
-    double pts_drift;
-    // 当前时钟(如视频时钟)最后一次更新时间，也可称当前时钟时间
-    double last_updated;
-    // 时钟速度控制，用于控制播放速度
-    double speed;
-    // 播放序列，所谓播放序列就是一段连续的播放动作，一个seek操作会启动一段新的播放序列
-    int serial;
-    // 暂停标志
-    int paused;
-    // 指向packet_serial
-    int *queue_serial;
-} Clock;
-
 typedef struct P_AVPacket_T {
     P_AVPacket_T()
     {
@@ -148,10 +111,10 @@ typedef struct PacketQueue_T {
     }
     ~PacketQueue_T()
     {
-        std::list<P_AVPacket *>::iterator item = AvPacketList.begin();
+        auto item = AvPacketList.begin();
         for(; item != AvPacketList.end(); )
         {
-            std::list<P_AVPacket *>::iterator item_e = item++;
+            auto item_e = item++;
             SAFE_DELETE(*item_e);
             AvPacketList.erase(item_e);
         }
@@ -224,7 +187,10 @@ typedef struct Frame {
     }
     ~Frame()
     {
-        SAFE_DELETE(frame);
+        if (frame) {
+            av_frame_free(&frame);
+            frame = NULL;
+        }
         memset(&sub, 0, sizeof(AVSubtitle));
         serial = -1;
         pts = -1;
@@ -254,7 +220,6 @@ typedef struct Frame {
 typedef struct FrameQueue {
     FrameQueue()
     {
-//        Queue.clear();
         rindex = 0;
         windex = 0;
         size = 0;
@@ -267,15 +232,13 @@ typedef struct FrameQueue {
     }
     ~FrameQueue()
     {
-//        std::vector<Frame *>::iterator item = Queue.begin();
-//        for(; item != Queue.end(); )
-//        {
-//            std::vector<Frame *>::iterator item_e = item++;
-////            SAFE_DELETE(*item_e);
-//            av_frame_unref((*item_e)->frame);      // 可能内部使用引用计数方式，这边先释放帧引用
-//            Queue.erase(item_e);
-//        }
-//        Queue.clear();
+        for(int i = 0; i < FRAME_QUEUE_SIZE; i++) {
+            Frame FrameData = queue[i];
+            if(FrameData.frame) {
+                av_frame_free(&FrameData.frame);
+                FrameData.frame = NULL;
+            }
+        }
         rindex = 0;
         windex = 0;
         size = 0;
@@ -294,7 +257,6 @@ typedef struct FrameQueue {
         }
         SAFE_DELETE(pktq);
     }
-//    std::vector<Frame *> Queue;
     Frame queue[FRAME_QUEUE_SIZE];
     int rindex;
     int windex;
@@ -310,7 +272,6 @@ typedef struct FrameQueue {
 typedef struct DecoderContext_T {
     DecoderContext_T()
     {
-        
         codecContext = NULL;
         pkt_serial = -1;
         finished = 0;

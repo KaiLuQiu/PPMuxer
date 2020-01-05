@@ -15,7 +15,7 @@
 #include <vector>
 #include <thread>
 #include "Message.h"
-#include "PPlayer_C_Interface.h"
+#include "PPEncoder_C_Interface.h"
 
 NS_MEDIA_BEGIN
 

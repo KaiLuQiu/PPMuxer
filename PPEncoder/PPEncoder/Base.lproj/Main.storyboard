@@ -26,10 +26,10 @@
             </objects>
             <point key="canvasLocation" x="337" y="15"/>
         </scene>
-        <!--View Controller-->
+        <!--Encoder Controller-->
         <scene sceneID="3mK-wB-f1p">
             <objects>
-                <viewController storyboardIdentifier="EncoderController" id="EYg-Ik-ZJ5" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="EncoderController" id="EYg-Ik-ZJ5" customClass="PPEncoderController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="FNO-WL-WnQ"/>
                         <viewControllerLayoutGuide type="bottom" id="LG1-nT-6CC"/>

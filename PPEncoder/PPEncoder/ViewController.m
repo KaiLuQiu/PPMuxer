@@ -20,7 +20,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    
+//    PPEncoderController *EncoderController = [self.storyboard instantiateViewControllerWithIdentifier:@"EncoderController"];
+//        [self presentViewController:EncoderController animated:YES completion:nil];
     self.pOpenVideoButton = [UIButton buttonWithType:UIButtonTypeCustom];
     self.pOpenVideoButton.frame = CGRectMake((self.view.frame.size.width-160*phoneScale)/2, self.view.frame.size.height-(60+160)*phoneScale, 160*phoneScale, 160*phoneScale);
     self.pOpenVideoButton.layer.cornerRadius = 160*phoneScale/2;

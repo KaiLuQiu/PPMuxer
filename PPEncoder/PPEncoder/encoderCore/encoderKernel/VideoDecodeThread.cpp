@@ -9,7 +9,6 @@
 
 #include "VideoDecodeThread.h"
 #include "FrameQueueFunc.h"
-#include "AvSyncClock.h"
 
 NS_MEDIA_BEGIN
 
@@ -78,21 +77,21 @@ int VideoDecodeThread::get_video_frame(AVFrame *frame)
     frame->sample_aspect_ratio = av_guess_sample_aspect_ratio(pPlayerContext->ic, pPlayerContext->ic->streams[pPlayerContext->videoStreamIndex], frame);
     
     // 如果当前video 落后则丢帧处理
-    if (frame->pts != AV_NOPTS_VALUE)
-    {
-        double diff = dpts - AvSyncClock::get_master_clock(pPlayerContext);
-        
-        if (!isnan(diff) && fabs(diff) < AV_NOSYNC_THRESHOLD && diff < 0 &&
-            pPlayerContext->videoDecoder->pkt_serial == pPlayerContext->VideoClock.serial &&
-            pPlayerContext->videoRingBuffer.nb_packets)
-        {
-            printf("avsync:videodecode thread drop video, diff = %f, frame_drops_early %d\n", diff, pPlayerContext->frame_drops_early);
-            pPlayerContext->frame_drops_early++;
-            av_frame_unref(frame);
-            av_free_packet(&VideoPkt);
-            return -1;
-        }
-    }
+//    if (frame->pts != AV_NOPTS_VALUE)
+//    {
+//        double diff = dpts - AvSyncClock::get_master_clock(pPlayerContext);
+//
+//        if (!isnan(diff) && fabs(diff) < AV_NOSYNC_THRESHOLD && diff < 0 &&
+//            pPlayerContext->videoDecoder->pkt_serial == pPlayerContext->VideoClock.serial &&
+//            pPlayerContext->videoRingBuffer.nb_packets)
+//        {
+//            printf("avsync:videodecode thread drop video, diff = %f, frame_drops_early %d\n", diff, pPlayerContext->frame_drops_early);
+//            pPlayerContext->frame_drops_early++;
+//            av_frame_unref(frame);
+//            av_free_packet(&VideoPkt);
+//            return -1;
+//        }
+//    }
 
     av_free_packet(&VideoPkt);
     return ret;
@@ -125,7 +124,7 @@ bool VideoDecodeThread::init(PlayerContext *playerContext, EventHandler *handler
     }
         
     // 初始化audio的同步时钟
-    AvSyncClock::init_clock(&pPlayerContext->VideoClock, &pPlayerContext->videoRingBuffer.serial);
+//    AvSyncClock::init_clock(&pPlayerContext->VideoClock, &pPlayerContext->videoRingBuffer.serial);
     
     return true;
 }
@@ -217,7 +216,6 @@ int VideoDecodeThread::queue_picture(AVFrame *src_frame, double pts, double dura
     av_frame_move_ref(vp->frame, src_frame);
     // 主要时将写索引往前移动
     FrameQueueFunc::frame_queue_push(&pPlayerContext->videoDecodeRingBuffer);
-    // pPlayerContext->videoDecodeRingBuffer.Queue.push_back(vp);
     return 0;
 }
 

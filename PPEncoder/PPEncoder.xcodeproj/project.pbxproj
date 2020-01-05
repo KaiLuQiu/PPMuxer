@@ -25,17 +25,17 @@
 		36676C9323BF8B6F00AF7208 /* PPEncoderController.m in Sources */ = {isa = PBXBuildFile; fileRef = 36676C9123BF8B6F00AF7208 /* PPEncoderController.m */; };
 		36676CA023BF8C9F00AF7208 /* AvEncodeThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676C9A23BF8C9E00AF7208 /* AvEncodeThread.cpp */; };
 		36676CA123BF8C9F00AF7208 /* AvEncoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676C9D23BF8C9E00AF7208 /* AvEncoder.cpp */; };
-		36676CA423BF8CDD00AF7208 /* EncoderMidlle.mm in Sources */ = {isa = PBXBuildFile; fileRef = 36676CA323BF8CDD00AF7208 /* EncoderMidlle.mm */; };
+		36676CA423BF8CDD00AF7208 /* PPEncoderMidlle.mm in Sources */ = {isa = PBXBuildFile; fileRef = 36676CA323BF8CDD00AF7208 /* PPEncoderMidlle.mm */; };
 		36676CCB23BF920A00AF7208 /* DemuxThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CBC23BF920900AF7208 /* DemuxThread.cpp */; };
 		36676CCC23BF920A00AF7208 /* VideoDecodeThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CBE23BF920900AF7208 /* VideoDecodeThread.cpp */; };
 		36676CCD23BF920A00AF7208 /* FrameQueueFunc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CBF23BF920900AF7208 /* FrameQueueFunc.cpp */; };
 		36676CCE23BF920A00AF7208 /* PacketQueueFunc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CC023BF920900AF7208 /* PacketQueueFunc.cpp */; };
 		36676CCF23BF920A00AF7208 /* mediaCore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CC123BF920900AF7208 /* mediaCore.cpp */; };
-		36676CD023BF920A00AF7208 /* AvSyncClock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CC323BF920900AF7208 /* AvSyncClock.cpp */; };
 		36676CD123BF920A00AF7208 /* AudioDecodeThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CC523BF920A00AF7208 /* AudioDecodeThread.cpp */; };
 		36676CD323BF920A00AF7208 /* messageQueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CC823BF920A00AF7208 /* messageQueue.cpp */; };
-		36676CD923BF934E00AF7208 /* EventHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CD423BF934E00AF7208 /* EventHandler.cpp */; };
-		36676CDA23BF934E00AF7208 /* Message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CD523BF934E00AF7208 /* Message.cpp */; };
+		36676CE123C1928000AF7208 /* Message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CDD23C1928000AF7208 /* Message.cpp */; };
+		36676CE223C1928000AF7208 /* EventHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CE023C1928000AF7208 /* EventHandler.cpp */; };
+		36676CE623C1930E00AF7208 /* PPEncoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CE423C1930E00AF7208 /* PPEncoder.cpp */; };
 		36E3120323BC426200CA5B44 /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 36E3120223BC426200CA5B44 /* opencv2.framework */; };
 		36E3128623BC429E00CA5B44 /* libavutil.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 36E3127F23BC429E00CA5B44 /* libavutil.a */; };
 		36E3128723BC429E00CA5B44 /* libavfilter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 36E3128023BC429E00CA5B44 /* libavfilter.a */; };
@@ -184,8 +184,8 @@
 		36676C9C23BF8C9E00AF7208 /* AvEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AvEncoder.h; sourceTree = "<group>"; };
 		36676C9D23BF8C9E00AF7208 /* AvEncoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AvEncoder.cpp; sourceTree = "<group>"; };
 		36676C9E23BF8C9E00AF7208 /* MediaCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MediaCommon.h; sourceTree = "<group>"; };
-		36676CA223BF8CDD00AF7208 /* EncoderMidlle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EncoderMidlle.h; sourceTree = "<group>"; };
-		36676CA323BF8CDD00AF7208 /* EncoderMidlle.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = EncoderMidlle.mm; sourceTree = "<group>"; };
+		36676CA223BF8CDD00AF7208 /* PPEncoderMidlle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPEncoderMidlle.h; sourceTree = "<group>"; };
+		36676CA323BF8CDD00AF7208 /* PPEncoderMidlle.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PPEncoderMidlle.mm; sourceTree = "<group>"; };
 		36676CB823BF920900AF7208 /* DemuxThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DemuxThread.h; sourceTree = "<group>"; };
 		36676CB923BF920900AF7208 /* VideoDecodeThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoDecodeThread.h; sourceTree = "<group>"; };
 		36676CBA23BF920900AF7208 /* messageQueue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = messageQueue.hpp; sourceTree = "<group>"; };
@@ -197,17 +197,18 @@
 		36676CC023BF920900AF7208 /* PacketQueueFunc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PacketQueueFunc.cpp; sourceTree = "<group>"; };
 		36676CC123BF920900AF7208 /* mediaCore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mediaCore.cpp; sourceTree = "<group>"; };
 		36676CC223BF920900AF7208 /* AudioDecodeThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioDecodeThread.h; sourceTree = "<group>"; };
-		36676CC323BF920900AF7208 /* AvSyncClock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AvSyncClock.cpp; sourceTree = "<group>"; };
 		36676CC423BF920A00AF7208 /* MediaDefineInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MediaDefineInfo.h; sourceTree = "<group>"; };
 		36676CC523BF920A00AF7208 /* AudioDecodeThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AudioDecodeThread.cpp; sourceTree = "<group>"; };
 		36676CC823BF920A00AF7208 /* messageQueue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = messageQueue.cpp; sourceTree = "<group>"; };
 		36676CC923BF920A00AF7208 /* PacketQueueFunc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PacketQueueFunc.h; sourceTree = "<group>"; };
-		36676CCA23BF920A00AF7208 /* AvSyncClock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AvSyncClock.h; sourceTree = "<group>"; };
-		36676CD423BF934E00AF7208 /* EventHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EventHandler.cpp; sourceTree = "<group>"; };
-		36676CD523BF934E00AF7208 /* Message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Message.cpp; sourceTree = "<group>"; };
-		36676CD623BF934E00AF7208 /* EventHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventHandler.h; sourceTree = "<group>"; };
-		36676CD723BF934E00AF7208 /* Message.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Message.h; sourceTree = "<group>"; };
-		36676CD823BF934E00AF7208 /* PPlayer_C_Interface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPlayer_C_Interface.h; sourceTree = "<group>"; };
+		36676CDC23C1928000AF7208 /* EventHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventHandler.h; sourceTree = "<group>"; };
+		36676CDD23C1928000AF7208 /* Message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Message.cpp; sourceTree = "<group>"; };
+		36676CDE23C1928000AF7208 /* Message.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Message.h; sourceTree = "<group>"; };
+		36676CE023C1928000AF7208 /* EventHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EventHandler.cpp; sourceTree = "<group>"; };
+		36676CE323C1930E00AF7208 /* PPEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPEncoder.h; sourceTree = "<group>"; };
+		36676CE423C1930E00AF7208 /* PPEncoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PPEncoder.cpp; sourceTree = "<group>"; };
+		36676CE523C1930E00AF7208 /* PPEncoder_C_Interface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPEncoder_C_Interface.h; sourceTree = "<group>"; };
+		36676CE723C1978200AF7208 /* PPEncoderDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPEncoderDelegate.h; sourceTree = "<group>"; };
 		36C7A73B238C0C14003250C1 /* OpenGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenGLView.h; sourceTree = "<group>"; };
 		36C7A73C238C0C14003250C1 /* OpenGLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OpenGLView.m; sourceTree = "<group>"; };
 		36E3120223BC426200CA5B44 /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = opencv2.framework; path = PPEncoder/opencv2.framework; sourceTree = "<group>"; };
@@ -432,10 +433,10 @@
 				19200BD2216F65B100EF7D6F /* ViewController.m */,
 				36676C9223BF8B6F00AF7208 /* PPEncoderController.h */,
 				36676C9123BF8B6F00AF7208 /* PPEncoderController.m */,
+				19200BDC216F65B200EF7D6F /* Info.plist */,
 				19200BD4216F65B100EF7D6F /* Main.storyboard */,
 				19200BD7216F65B200EF7D6F /* Assets.xcassets */,
 				19200BD9216F65B200EF7D6F /* LaunchScreen.storyboard */,
-				19200BDC216F65B200EF7D6F /* Info.plist */,
 				19200BDD216F65B200EF7D6F /* main.m */,
 			);
 			path = PPEncoder;
@@ -582,6 +583,7 @@
 		36676C9423BF8C9E00AF7208 /* encoderCore */ = {
 			isa = PBXGroup;
 			children = (
+				36676CDB23C1928000AF7208 /* encoderMiddle */,
 				36676C9523BF8C9E00AF7208 /* platform */,
 				36676C9923BF8C9E00AF7208 /* encoderKernel */,
 			);
@@ -600,13 +602,9 @@
 		36676C9623BF8C9E00AF7208 /* ios */ = {
 			isa = PBXGroup;
 			children = (
-				36676CD423BF934E00AF7208 /* EventHandler.cpp */,
-				36676CD623BF934E00AF7208 /* EventHandler.h */,
-				36676CD523BF934E00AF7208 /* Message.cpp */,
-				36676CD723BF934E00AF7208 /* Message.h */,
-				36676CD823BF934E00AF7208 /* PPlayer_C_Interface.h */,
-				36676CA223BF8CDD00AF7208 /* EncoderMidlle.h */,
-				36676CA323BF8CDD00AF7208 /* EncoderMidlle.mm */,
+				36676CE723C1978200AF7208 /* PPEncoderDelegate.h */,
+				36676CA223BF8CDD00AF7208 /* PPEncoderMidlle.h */,
+				36676CA323BF8CDD00AF7208 /* PPEncoderMidlle.mm */,
 			);
 			path = ios;
 			sourceTree = "<group>";
@@ -614,10 +612,9 @@
 		36676C9923BF8C9E00AF7208 /* encoderKernel */ = {
 			isa = PBXGroup;
 			children = (
+				36676C9E23BF8C9E00AF7208 /* MediaCommon.h */,
 				36676CC523BF920A00AF7208 /* AudioDecodeThread.cpp */,
 				36676CC223BF920900AF7208 /* AudioDecodeThread.h */,
-				36676CC323BF920900AF7208 /* AvSyncClock.cpp */,
-				36676CCA23BF920A00AF7208 /* AvSyncClock.h */,
 				36676CBC23BF920900AF7208 /* DemuxThread.cpp */,
 				36676CB823BF920900AF7208 /* DemuxThread.h */,
 				36676CBF23BF920900AF7208 /* FrameQueueFunc.cpp */,
@@ -635,10 +632,24 @@
 				36676C9B23BF8C9E00AF7208 /* AvEncodeThread.h */,
 				36676C9C23BF8C9E00AF7208 /* AvEncoder.h */,
 				36676C9D23BF8C9E00AF7208 /* AvEncoder.cpp */,
-				36676C9E23BF8C9E00AF7208 /* MediaCommon.h */,
 			);
 			path = encoderKernel;
 			sourceTree = "<group>";
+		};
+		36676CDB23C1928000AF7208 /* encoderMiddle */ = {
+			isa = PBXGroup;
+			children = (
+				36676CE523C1930E00AF7208 /* PPEncoder_C_Interface.h */,
+				36676CE423C1930E00AF7208 /* PPEncoder.cpp */,
+				36676CE323C1930E00AF7208 /* PPEncoder.h */,
+				36676CE023C1928000AF7208 /* EventHandler.cpp */,
+				36676CDC23C1928000AF7208 /* EventHandler.h */,
+				36676CDD23C1928000AF7208 /* Message.cpp */,
+				36676CDE23C1928000AF7208 /* Message.h */,
+			);
+			name = encoderMiddle;
+			path = PPEncoder/encoderCore/encoderMiddle;
+			sourceTree = SOURCE_ROOT;
 		};
 		36C7A73A238C0C14003250C1 /* OpenGL */ = {
 			isa = PBXGroup;
@@ -1066,26 +1077,26 @@
 			buildActionMask = 2147483647;
 			files = (
 				36FAD2D023B89A66007B4144 /* WPhotoViewController.m in Sources */,
-				36676CDA23BF934E00AF7208 /* Message.cpp in Sources */,
 				36FAD2CF23B89A66007B4144 /* myPhotoCell.m in Sources */,
+				36676CE623C1930E00AF7208 /* PPEncoder.cpp in Sources */,
 				36FAD2D123B89A66007B4144 /* NavView.m in Sources */,
 				36676CCC23BF920A00AF7208 /* VideoDecodeThread.cpp in Sources */,
 				36676C9323BF8B6F00AF7208 /* PPEncoderController.m in Sources */,
 				36676CD323BF920A00AF7208 /* messageQueue.cpp in Sources */,
 				36676CA123BF8C9F00AF7208 /* AvEncoder.cpp in Sources */,
 				36676CCB23BF920A00AF7208 /* DemuxThread.cpp in Sources */,
-				36676CD923BF934E00AF7208 /* EventHandler.cpp in Sources */,
+				36676CE123C1928000AF7208 /* Message.cpp in Sources */,
+				36676CE223C1928000AF7208 /* EventHandler.cpp in Sources */,
 				19200BD3216F65B100EF7D6F /* ViewController.m in Sources */,
 				19200BDE216F65B200EF7D6F /* main.m in Sources */,
 				36676CCF23BF920A00AF7208 /* mediaCore.cpp in Sources */,
 				19200BD0216F65B000EF7D6F /* AppDelegate.m in Sources */,
-				36676CD023BF920A00AF7208 /* AvSyncClock.cpp in Sources */,
 				36676CD123BF920A00AF7208 /* AudioDecodeThread.cpp in Sources */,
 				36FAD2D623B89A66007B4144 /* UIImage+fixOrientation.m in Sources */,
 				36676CCE23BF920A00AF7208 /* PacketQueueFunc.cpp in Sources */,
 				36676CA023BF8C9F00AF7208 /* AvEncodeThread.cpp in Sources */,
 				36FAD2D523B89A66007B4144 /* WPFunctionView.m in Sources */,
-				36676CA423BF8CDD00AF7208 /* EncoderMidlle.mm in Sources */,
+				36676CA423BF8CDD00AF7208 /* PPEncoderMidlle.mm in Sources */,
 				36676CCD23BF920A00AF7208 /* FrameQueueFunc.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
