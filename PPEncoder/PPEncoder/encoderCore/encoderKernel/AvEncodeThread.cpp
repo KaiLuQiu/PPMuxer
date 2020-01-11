@@ -65,6 +65,7 @@ bool AvEncodeThread::start()
 
 void AvEncodeThread::run()
 {
+    int count = 0;
     while(!pNeedStop)
     {
         if (pMessageQueue != NULL) {
@@ -99,6 +100,13 @@ void AvEncodeThread::run()
             // 判断decoder queue中是否存在数据
             if (FrameQueueFunc::frame_queue_nb_remaining(&pPlayerContext->videoDecodeRingBuffer) == 0)
             {
+                // 说明解码结束了
+                if (pPlayerContext->videoDecoder->finished &&
+                    pPlayerContext->video_encode_eof == false) {
+                    pEncoder->flushVideoEncode();
+                    pEncoder->finish();
+                    pPlayerContext->video_encode_eof = true;
+                }
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 // 如果没有则，delay
                 continue;
@@ -116,14 +124,28 @@ void AvEncodeThread::run()
                 }
 
                 //暂时不做av sync操作，带音频模块的接入
-                FrameQueueFunc::frame_queue_next(&pPlayerContext->videoDecodeRingBuffer);
                 pEncoder->VideoEncode(vp->frame);
+                FrameQueueFunc::frame_queue_next(&pPlayerContext->videoDecodeRingBuffer);
             }
         }
         
-        // 说明当前存在视频流
+        // 说明当前存在音频流
         if (pPlayerContext->ic->streams[pPlayerContext->audioStreamIndex])
         {
+            if (FrameQueueFunc::frame_queue_nb_remaining(&pPlayerContext->audioDecodeRingBuffer) == 0)
+            {
+                // 说明解码结束了
+                if (pPlayerContext->audioDecoder->finished &&
+                    pPlayerContext->audio_encode_eof == false) {
+                    pEncoder->flushAudioEncode();
+                    pEncoder->finish();
+                    pPlayerContext->audio_encode_eof = true;
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                // 如果没有则，delay
+                continue;
+            }
+            
             Frame *pFrame = getOneValidAudioFrame();
             if(NULL == pFrame) {
                 continue;

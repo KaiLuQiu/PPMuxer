@@ -82,12 +82,14 @@ int AvEncoder::init(const char* fileName, int nWidth, int nHeight, int duration,
     p_FormatContext->oformat = p_OutFormat;
 
     if (!(p_OutFormat->flags & AVFMT_NOFILE)) {
-        if (avio_open(&p_FormatContext->pb, pFileName, AVIO_FLAG_READ_WRITE) < 0) {
+        if (avio_open(&p_FormatContext->pb, pFileName, AVIO_FLAG_WRITE) < 0) {
+            printf("AvEncoder: avio_open fail!!!\n");
             return -1;
         }
     }
     
     if (p_OutFormat->video_codec == AV_CODEC_ID_NONE) {
+        printf("AvEncoder: AV CODEC ID NONE!!!\n");
         return -1;
     }
     
@@ -96,18 +98,21 @@ int AvEncoder::init(const char* fileName, int nWidth, int nHeight, int duration,
         p_SwsContex = NULL;
     }
     p_SwsContex = sws_getContext(nWidth, nHeight, pEncodeParam.pVideoInPixelFormat, pEncodeParam.pVideoOutWidth, pEncodeParam.pVideoOutHeight, pEncodeParam.pVideoOutPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
-    
-    ret = initVideoEncdoe(nWidth, nHeight);
-    if (ret < 0) {
-        return -1;
-    }
 
     ret = initAudioEncdoe();
     if (ret < 0) {
+        printf("AvEncoder: initAudioEncdoe fail!!!\n");
+        return -1;
+    }
+    
+    ret = initVideoEncdoe(nWidth, nHeight);
+    if (ret < 0) {
+        printf("AvEncoder: initVideoEncdoe fail!!!\n");
         return -1;
     }
     
     if (AllocFrame() < 0) {
+        printf("AvEncoder: AllocFrame fail!!!\n");
         return -1;
     }
 
@@ -121,7 +126,7 @@ int AvEncoder::initVideoEncdoe(int nWidth, int nHeight)
     
     // 设置流的timebase
     p_VideoStream->time_base = (AVRational){1, pEncodeParam.pVideoOutFrameRate};
-    p_VideoStream->duration = pDuration * AV_TIME_BASE;
+    p_VideoStream->duration = pDuration;
     
     // 获取编码器上下文
     p_VideoCodecContext = p_VideoStream->codec;
@@ -138,14 +143,30 @@ int AvEncoder::initVideoEncdoe(int nWidth, int nHeight)
     
     p_VideoCodecContext->codec_id = pEncodeParam.pVideoOutCodecId;
     
+    //2.7 设置GOP->影响到视频质量问题-画面组-一组连续画面
+        //MPEG格式画面类型:3种类型->分为：I帧、P帧、B帧
+        //I帧->内部编码帧-原始帧(原始视频数据)
+        //      完整画面->关键帧(必须的有，如果没有I，那么就无法进行编码，解码)
+        //      视频第1帧 ->视频序列中的第一个帧始终都是I帧，因为它是关键帧
+        //P帧->向前预测帧->预测前面的一帧类型，处理数据(前面->I帧，B帧)
+        //      P帧数据 - 根据前面的一帧数据->进行处理得到P帧
+        //B帧->前后预测帧（双向预测帧）->前面一帧和后面一帧
+        //      B帧压缩率高，但是对解码性能要求较高
+        //总结：I只需要考虑自己 = 1帧 ，p帧考虑自己+前面一帧 = 2帧,B帧考虑自己+前后帧 = 3帧
+        //      P帧和B帧是对I帧压缩
+        //每250帧，插入1个I帧，I帧越小，视频越小-默认值-视频不一样
     p_VideoCodecContext->gop_size = 250;
+    
+    //2.8设置量化参数->数学算法(高级算法)
+    // 总结：量化系数小,视频越是清晰
+    //  一般情况下都是默认值，最小量化系数默认值是10，最大量化系数默认值是51
     p_VideoCodecContext->max_qdiff = 4;
     p_VideoCodecContext->max_qdiff = 4;
 
     p_VideoCodecContext->qmin = 10;
     p_VideoCodecContext->qcompress = 1.0;
 
-    p_VideoCodecContext->max_b_frames = 600;
+    p_VideoCodecContext->max_b_frames = 1;
 
     AVCodec *avcodec = avcodec_find_encoder(p_VideoCodecContext->codec_id);
     if (!avcodec) {
@@ -187,7 +208,7 @@ int AvEncoder::initAudioEncdoe()
     if (!p_AudioStream) {
         return -1;
     }
-    p_AudioStream->duration = pDuration * AV_TIME_BASE;
+    p_AudioStream->duration = pDuration;
     
     p_AudioCodecContext = p_AudioStream->codec;
     p_AudioCodecContext->codec = avcodec_find_encoder(pEncodeParam.pAudioOutCodecId);
@@ -248,7 +269,7 @@ int AvEncoder::AllocFrame()
     p_VideoFrame->width = pEncodeParam.pVideoOutWidth;
     p_VideoFrame->height = pEncodeParam.pVideoOutHeight;
     p_VideoFrame->format = pEncodeParam.pVideoOutPixelFormat;
-    
+
     int ret = av_frame_get_buffer(p_VideoFrame, 0);
     if (ret < 0) {
         av_frame_free(&p_VideoFrame);
@@ -279,10 +300,10 @@ int AvEncoder::AudioEncode(AVFrame *frame)
     en_pkt.data = NULL;
     en_pkt.size = 0;
     
-    updateAudioFrame(frame, p_AudioFrame);
+//    updateAudioFrame(frame, p_AudioFrame);
     
     int got_frame = 0;
-    ret = avcodec_encode_audio2(p_AudioCodecContext, &en_pkt, p_AudioFrame, &got_frame);
+    ret = avcodec_encode_audio2(p_AudioCodecContext, &en_pkt, frame, &got_frame);
     if (ret < 0) {
         av_packet_unref(&en_pkt);
 
@@ -320,41 +341,76 @@ int AvEncoder::VideoEncode(const unsigned char *pdata)
 
 int AvEncoder::VideoEncode(AVFrame *frame)
 {
+    int ret;
     AVPacket en_pkt;
     av_init_packet(&en_pkt);
+    en_pkt.data = NULL;
+    en_pkt.size = 0;
+        
+    int got_frame = 0;
     
-    int ret = avcodec_send_frame(p_VideoCodecContext, p_VideoFrame);
+    frame->pts = av_rescale_q(pCurVideoFrameIndex++, p_VideoCodecContext->time_base, p_VideoStream->time_base);
+
+    ret = avcodec_encode_video2(p_VideoCodecContext, &en_pkt, frame, &got_frame);
     if (ret < 0) {
-        free(en_pkt.data);
         av_packet_unref(&en_pkt);
+
         return -1;
     }
-        
-    ret = avcodec_receive_packet(p_VideoCodecContext, &en_pkt);
-    if(ret == 0) {
-        //编码成功
-        // 将视频压缩数据-写入到输出文件中-outFilePath;
+    
+    if (got_frame) {
+        printf("dts = %ld, pts = %d, duration = %d\n",en_pkt.dts, en_pkt.pts, en_pkt.duration);
         en_pkt.stream_index = pVideoStreamIndex;
         en_pkt.duration = pDuration;
-        int result = av_interleaved_write_frame(p_FormatContext, &en_pkt);
-        if (result < 0) {
-            free(en_pkt.data);
-            av_packet_unref(&en_pkt);
-            return -1;
-        }
-    } else {
-        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-            ;
-        } else {
-            printf("Error during encoding\n");
-        }
-        free(en_pkt.data);
-        av_packet_unref(&en_pkt);
-        return -1;
+
+        ret = av_interleaved_write_frame(p_FormatContext, &en_pkt);
     }
-    free(en_pkt.data);
+    if(en_pkt.data) {
+        free(en_pkt.data);
+    }
     av_free_packet(&en_pkt);
     return 0;
+    
+//    AVPacket en_pkt = {0};
+//    av_init_packet(&en_pkt);
+//
+////    av_frame_move_ref(p_VideoFrame, frame);
+//    int ret = avcodec_send_frame(p_VideoCodecContext, frame);
+//    if (ret < 0) {
+//        free(en_pkt.data);
+//        av_packet_unref(&en_pkt);
+//        return -1;
+//    }
+////    av_frame_unref(p_VideoFrame);
+//    ret = avcodec_receive_packet(p_VideoCodecContext, &en_pkt);
+//    if(ret == 0) {
+//        //编码成功
+//        printf("dts = %ld, pts = %d, duration = %d\n",en_pkt.dts, en_pkt.pts, en_pkt.duration);
+//        // 将视频压缩数据-写入到输出文件中-outFilePath;
+//        en_pkt.stream_index = pVideoStreamIndex;
+//        en_pkt.duration = pDuration;
+//        //    frame->pts = av_rescale_q(pCurVideoFrameIndex++, p_VideoCodecContext->time_base, p_VideoStream->time_base);
+//
+//        int result = av_interleaved_write_frame(p_FormatContext, &en_pkt);
+//        if (result < 0) {
+//            free(en_pkt.data);
+//            av_packet_unref(&en_pkt);
+//            return -1;
+//        }
+//    } else {
+//        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+//            ;
+//        } else {
+//            printf("Error during encoding\n");
+//        }
+//        free(en_pkt.data);
+//        av_packet_unref(&en_pkt);
+//        return -1;
+//    }
+//    free(en_pkt.data);
+//    av_free_packet(&en_pkt);
+//
+//    return 0;
 }
 
 int AvEncoder::updateVideoFrame(const unsigned char *pdata, AVFrame *frame)

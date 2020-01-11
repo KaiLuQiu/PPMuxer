@@ -45,6 +45,8 @@ typedef struct PlayerContext_T {
         av_init_packet(audio_flush_pkt);
         audio_flush_pkt->data = (uint8_t *)audio_flush_pkt;
         eof = 0;
+        video_encode_eof = false;
+        audio_encode_eof = false;
     }
     ~PlayerContext_T()
     {
@@ -77,6 +79,8 @@ typedef struct PlayerContext_T {
             SAFE_DELETE(audio_flush_pkt);
         }
         eof = 0;
+        video_encode_eof = false;
+        audio_encode_eof = false;
     }
     AVInputFormat *avformat;            //
     int seek_request;                   // 标识一次SEEK请求
@@ -101,6 +105,9 @@ typedef struct PlayerContext_T {
     int videoStreamIndex;
     int audioStreamIndex;
     int eof;                            // 是否parse到类eof标识位
+    bool video_encode_eof;              // video是否编码结束
+    bool audio_encode_eof;              // audio是否编码结束
+
     PlayerState playerState;            // 记录当前播放状态
     float volumeValue;                  // 设置声音值
     

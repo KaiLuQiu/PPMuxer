@@ -158,23 +158,23 @@ void DemuxThread::run()
         if(ret < 0)
         {
             if ((ret == AVERROR_EOF || avio_feof(pPlayerContext->ic->pb)) && !pPlayerContext->eof) {
-                if (pPlayerContext->videoStreamIndex >= 0)
+                if (pPlayerContext->videoStreamIndex >= 0) {
+                    // 这边推2笔空buff是因为，第一笔是为了获取eof，第二笔只是暂时处理decodeThread的bug
                     videoPackeQueueFunc->packet_queue_put_nullpacket(videoRingBuffer, pPlayerContext->videoStreamIndex);
-                if (pPlayerContext->audioStreamIndex >= 0)
+                    videoPackeQueueFunc->packet_queue_put_nullpacket(videoRingBuffer, pPlayerContext->videoStreamIndex);
+                }
+                if (pPlayerContext->audioStreamIndex >= 0) {
                     audioPackeQueueFunc->packet_queue_put_nullpacket(audioRingBuffer, pPlayerContext->audioStreamIndex);
+                    audioPackeQueueFunc->packet_queue_put_nullpacket(audioRingBuffer, pPlayerContext->audioStreamIndex);
+                }
                 pPlayerContext->eof = 1;
             }
-            if (pPlayerContext->ic->pb && pPlayerContext->ic->pb->error)
-                break;
-                //让线程等待10ms
-                SDL_LockMutex(pMutex);
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                SDL_UnlockMutex(pMutex);
-                continue;
-            }
-        else
-        {
-            pPlayerContext->eof = 0;
+//            if (pPlayerContext->ic->pb && pPlayerContext->ic->pb->error)
+            //让线程等待10ms
+//            SDL_LockMutex(pMutex);
+//            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+//            SDL_UnlockMutex(pMutex);
+            continue;
         }
 
         if (pkt.stream_index == pPlayerContext->audioStreamIndex)

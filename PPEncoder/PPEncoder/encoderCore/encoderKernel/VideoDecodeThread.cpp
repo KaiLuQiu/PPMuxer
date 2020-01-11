@@ -122,9 +122,6 @@ bool VideoDecodeThread::init(PlayerContext *playerContext, EventHandler *handler
         printf("pPlayerContext frame queue init is NULL \n");
         return false;
     }
-        
-    // 初始化audio的同步时钟
-//    AvSyncClock::init_clock(&pPlayerContext->VideoClock, &pPlayerContext->videoRingBuffer.serial);
     
     return true;
 }
@@ -154,6 +151,7 @@ void VideoDecodeThread::run()
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
             continue;
         }
+
         if (pPlayerContext->videoRingBuffer.size < 0 || pPlayerContext->videoRingBuffer.AvPacketList.empty() ||
             pPlayerContext->videoRingBuffer.nb_packets == 0)        // 判断buffer中是否有包
         {
@@ -170,9 +168,12 @@ void VideoDecodeThread::run()
         {
             if (AVERROR_EOF == ret)
             {
+                // 说明解码结束
                 pPlayerContext->videoDecoder->finished = pPlayerContext->videoDecoder->pkt_serial;
-                avcodec_flush_buffers(pPlayerContext->videoDecoder->codecContext);  // 冲刷avcodec信息
-                needStop = true;  //说明读取到了结束包信息
+                // 冲刷avcodec信息
+                avcodec_flush_buffers(pPlayerContext->videoDecoder->codecContext);
+                // 说明读取到了结束包信息
+                needStop = true;
             }
             continue;
         }

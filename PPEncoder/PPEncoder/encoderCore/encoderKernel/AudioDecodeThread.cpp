@@ -137,8 +137,10 @@ void AudioDecodeThread::run()
             if (AVERROR_EOF == ret)
             {
                 pPlayerContext->audioDecoder->finished = pPlayerContext->audioDecoder->pkt_serial;
-                avcodec_flush_buffers(pPlayerContext->audioDecoder->codecContext);  // 冲刷avcodec信息
-                needStop = true;  //说明读取到了结束包信息
+                // 冲刷avcodec信息
+                avcodec_flush_buffers(pPlayerContext->audioDecoder->codecContext);
+                // 说明读取到了结束包信息
+                needStop = true;
             }
             continue;
         }
