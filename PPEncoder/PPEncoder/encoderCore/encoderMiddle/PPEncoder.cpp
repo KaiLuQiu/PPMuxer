@@ -109,7 +109,6 @@ bool PPEncoder::prepareAsync()
         // videoDecode和audioDecode可以在prepareAsync的时候就开启，当显示线程则不可。为了加快第一帧的show
         p_VideoDecoderThread->start();
         p_AudioDecoderThread->start();
-        p_EncoderThread->start();
     }
     // 这边一般要render第一帧之后才能上发prepared消息
     p_Handler->sendOnPrepared();
@@ -123,6 +122,7 @@ void PPEncoder::prepare()
 
 bool PPEncoder::start()
 {
+    p_EncoderThread->start();
     p_Handler->sendOnStart();
     return true;
 }

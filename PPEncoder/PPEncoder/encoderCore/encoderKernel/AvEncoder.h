@@ -45,6 +45,16 @@ public:
      * 输入frame进行audio编码过程
      */
     int AudioEncode(AVFrame *frame);
+    
+    /*
+     * flush编码器
+     */
+    int flushVideoEncode();
+    
+    /*
+     * flush编码器
+     */
+    int flushAudioEncode();
 private:
 
     /*
@@ -56,16 +66,6 @@ private:
      * 初始化video编码器
      */
     int initVideoEncdoe(int nWidth, int nHeight);
-
-    /*
-     * flush编码器
-     */
-    int flushVideoEncode();
-    
-    /*
-     * flush编码器
-     */
-    int flushAudioEncode();
     
     /*
      * data转frame

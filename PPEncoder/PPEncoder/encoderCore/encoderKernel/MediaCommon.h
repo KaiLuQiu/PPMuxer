@@ -21,7 +21,7 @@ extern "C"{
 #include <libavutil/rational.h>
 #include <libavutil/time.h>
 #include <libavutil/samplefmt.h>
-
+#include <libavutil/imgutils.h>
 }
 
 #include "SDL.h"
@@ -307,9 +307,9 @@ typedef struct EncodeParam_T{
         pVideoInPixelFormat = AV_PIX_FMT_BGRA;
         pVideoOutPixelFormat = AV_PIX_FMT_YUV420P;
         pVideoOutCodecId = AV_CODEC_ID_H264;
-        pVideoOutFrameRate = 24;
-        pVideoOutWidth = 1080;
-        pVideoOutHeight = 1920;
+        pVideoOutFrameRate = 30;
+        pVideoOutWidth = 544;
+        pVideoOutHeight = 960;
         pAudioOutChannels = 2;
         pAudioOutChannelLayout = AV_CH_LAYOUT_STEREO;
         pAudioOutCodecId = AV_CODEC_ID_AAC;
