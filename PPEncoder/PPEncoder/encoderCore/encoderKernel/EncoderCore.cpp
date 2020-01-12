@@ -333,24 +333,26 @@ int EncoderCore::VideoEncode(const unsigned char *pdata)
 int EncoderCore::VideoEncode(AVFrame *srcframe)
 {
     int ret;
+    int got_frame = 0;
+
     AVPacket en_pkt;
     av_init_packet(&en_pkt);
     en_pkt.data = NULL;
     en_pkt.size = 0;
-    int got_frame = 0;
-    int outWidth = pEncodeParam.pVideoOutWidth;
-    int outHeight = pEncodeParam.pVideoOutHeight;
+    
+    int dstWidth = pEncodeParam.pVideoOutWidth;
+    int dstHeight = pEncodeParam.pVideoOutHeight;
     
     AVFrame* dst_frame = av_frame_alloc();
     dst_frame->format = pEncodeParam.pVideoOutPixelFormat;
-    dst_frame->width = outWidth;
-    dst_frame->height = outHeight;
+    dst_frame->width = dstWidth;
+    dst_frame->height = dstHeight;
     
-    int dst_bytes_num = avpicture_get_size(pEncodeParam.pVideoOutPixelFormat, outWidth, outHeight);
+    int dst_bytes_num = avpicture_get_size(pEncodeParam.pVideoOutPixelFormat, dstWidth, dstHeight);
     uint8_t* dst_buff = (uint8_t*)av_malloc(dst_bytes_num);
 
     avpicture_fill((AVPicture*)dst_frame, dst_buff, pEncodeParam.pVideoOutPixelFormat,
-                     outWidth, outHeight);
+                     dstWidth, dstHeight);
     printf("%d %d %d \n", dst_frame->linesize[0],  dst_frame->linesize[1], dst_frame->linesize[2]);
 
     if (swsScale(srcframe, dst_frame) == false) {
@@ -360,23 +362,13 @@ int EncoderCore::VideoEncode(AVFrame *srcframe)
     }
     
     dst_frame->pts = av_rescale_q(pCurVideoFrameIndex++, p_VideoCodecContext->time_base, p_VideoStream->time_base);
-
-//    unsigned char *rgbData = new unsigned char[outWidth * outHeight * 4];
-//
-//    ret = pMediaCore->yuvTorgb(frame, rgbData, outWidth, outHeight);
-//    if (ret < 0){
-//        printf("EncoderCore: yuvTorgb fail!!!\n");
-//        SAFE_DELETE_ARRAY(rgbData);
-//        return -1;
-//    }
-//    updateVideoFrame(rgbData);
     
     ret = avcodec_encode_video2(p_VideoCodecContext, &en_pkt, dst_frame, &got_frame);
+    
     if (ret < 0) {
         av_packet_unref(&en_pkt);
         av_free(dst_buff);
         av_frame_free(&dst_frame);
-        //        SAFE_DELETE_ARRAY(rgbData);
         return -1;
     }
     
@@ -384,16 +376,16 @@ int EncoderCore::VideoEncode(AVFrame *srcframe)
         printf("dts = %ld, pts = %d, duration = %d\n",en_pkt.dts, en_pkt.pts, en_pkt.duration);
         en_pkt.stream_index = pVideoStreamIndex;
         en_pkt.duration = pDuration;
-
-        ret = av_interleaved_write_frame(p_FormatContext, &en_pkt);
+        av_interleaved_write_frame(p_FormatContext, &en_pkt);
     }
+    
     if(en_pkt.data) {
         free(en_pkt.data);
     }
+    
     av_free_packet(&en_pkt);
     av_free(dst_buff);
     av_frame_free(&dst_frame);
-//    SAFE_DELETE_ARRAY(rgbData);
     return 0;
 }
 
