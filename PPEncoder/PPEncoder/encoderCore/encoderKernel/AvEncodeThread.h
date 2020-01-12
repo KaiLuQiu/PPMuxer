@@ -19,7 +19,7 @@ class AvEncodeThread : public std::thread
 public:
     AvEncodeThread();
     ~AvEncodeThread();
-    bool init(PlayerContext *playerContext, EventHandler *handler, mediaCore *p_Core, EncodeParam params, const char *outFile);
+    bool init(PlayerContext *playerContext, EventHandler *handler, EncodeParam params, const char *outFile);
 
     bool start();
 
@@ -41,8 +41,7 @@ private:
 //    PacketQueue         audioEncodeRingBuffer;  // 存储编码后的packet audio队列
     PlayerContext       *pPlayerContext;
     EventHandler        *pHandler;
-    EncoderCore           *pEncoder;
-    mediaCore           *pMediaCore;
+    EncoderCore         *pEncoder;
     bool                pPause;                   // 当前是否是pause状态
     bool                pNeedStop;
     message             *pMessageQueue;               // 当前的message信息

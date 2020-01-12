@@ -14,7 +14,6 @@ AvEncodeThread::AvEncodeThread():
 pNeedStop(0),
 pPause(false),
 pHandler(NULL),
-pMediaCore(NULL),
 pPlayerContext(NULL)
 {
     pEncoder = new (std::nothrow)EncoderCore();
@@ -34,16 +33,15 @@ AvEncodeThread::~AvEncodeThread()
     SAFE_DELETE(pEncoder);
 }
 
-bool AvEncodeThread::init(PlayerContext *playerContext, EventHandler *handler, mediaCore *p_Core, EncodeParam params, const char *outFile)
+bool AvEncodeThread::init(PlayerContext *playerContext, EventHandler *handler, EncodeParam params, const char *outFile)
 {
-    if (NULL == handler || NULL == playerContext || NULL == p_Core
+    if (NULL == handler || NULL == playerContext
         || NULL == pEncoder || NULL == outFile)
         return false;
     pPlayerContext = playerContext;
     pHandler = handler;
-    pMediaCore = p_Core;
     
-    int duration = playerContext->ic->duration;
+    int duration = playerContext->ic->duration / 1000;
     
     // 解码的格式与宽高信息
     AVCodecContext *p_CodecContex = pPlayerContext->ic->streams[pPlayerContext->videoStreamIndex]->codec;
