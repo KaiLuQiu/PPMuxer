@@ -1,15 +1,16 @@
 //
-//  AvEncoder.cpp
+//  EncoderCore.cpp
 //  PPEncoder
 //
 //  Created by 邱开禄 on 2019/12/31.
 //  Copyright © 2019 邱开禄. All rights reserved.
 //
-#include "AvEncoder.h"
+
+#include "EncoderCore.h"
 
 NS_MEDIA_BEGIN
 
-AvEncoder::AvEncoder():
+EncoderCore::EncoderCore():
 p_VideoCodecContext(NULL),
 p_AudioCodecContext(NULL),
 p_FormatContext(NULL),
@@ -23,15 +24,13 @@ pCurVideoFrameIndex(0),
 pCurAudioFrameIndex(0),
 pDuration(0),
 pFileName(NULL),
-pWidth(0),
-pHeight(0),
 pVideoStreamIndex(1),
 pAudioStreamIndex(0)
 {
 
 }
 
-AvEncoder::~AvEncoder()
+EncoderCore::~EncoderCore()
 {
     if (p_VideoCodecContext) {
         avcodec_close(p_VideoCodecContext);
@@ -61,16 +60,15 @@ AvEncoder::~AvEncoder()
     }
 }
 
-int AvEncoder::init(const char* fileName, int nWidth, int nHeight, int duration, EncodeParam param)
+int EncoderCore::init(const char* fileName, int duration, EncodeParam param)
 {
+    if (NULL == fileName) {
+        return -1;
+    }
     int ret;
     pFileName = fileName;
-    pWidth = nWidth;
-    pHeight = nHeight;
     pDuration = duration;
     pEncodeParam = param;
-//     注册编码器、解码器等
-//    av_register_all();
 
     // alloc avformat上下文
     p_FormatContext = avformat_alloc_context();
@@ -83,43 +81,42 @@ int AvEncoder::init(const char* fileName, int nWidth, int nHeight, int duration,
 
     if (!(p_OutFormat->flags & AVFMT_NOFILE)) {
         if (avio_open(&p_FormatContext->pb, pFileName, AVIO_FLAG_WRITE) < 0) {
-            printf("AvEncoder: avio_open fail!!!\n");
+            printf("EncoderCore: avio_open fail!!!\n");
             return -1;
         }
     }
     
     if (p_OutFormat->video_codec == AV_CODEC_ID_NONE) {
-        printf("AvEncoder: AV CODEC ID NONE!!!\n");
+        printf("EncoderCore: AV CODEC ID NONE!!!\n");
         return -1;
     }
     
-    if (p_SwsContex) {
-        sws_freeContext(p_SwsContex);
-        p_SwsContex = NULL;
-    }
-    p_SwsContex = sws_getContext(nWidth, nHeight, pEncodeParam.pVideoInPixelFormat, pEncodeParam.pVideoOutWidth, pEncodeParam.pVideoOutHeight, pEncodeParam.pVideoOutPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
-
     ret = initAudioEncdoe();
     if (ret < 0) {
-        printf("AvEncoder: initAudioEncdoe fail!!!\n");
+        printf("EncoderCore: initAudioEncdoe fail!!!\n");
         return -1;
     }
     
-    ret = initVideoEncdoe(nWidth, nHeight);
+    ret = initVideoEncdoe();
     if (ret < 0) {
-        printf("AvEncoder: initVideoEncdoe fail!!!\n");
+        printf("EncoderCore: initVideoEncdoe fail!!!\n");
         return -1;
     }
     
     if (AllocFrame() < 0) {
-        printf("AvEncoder: AllocFrame fail!!!\n");
+        printf("EncoderCore: AllocFrame fail!!!\n");
         return -1;
     }
-
+    
+    if(!SwsContextInit(pEncodeParam.pVideoInPixelFormat, pEncodeParam.pVideoInWidth, pEncodeParam.pVideoInHeight, pEncodeParam.pVideoOutPixelFormat, pEncodeParam.pVideoOutWidth, pEncodeParam.pVideoOutHeight)) {
+        printf("EncoderCore: SwsContextInit fail!!!\n");
+        return -1;
+    }
+    
     return 0;
 }
 
-int AvEncoder::initVideoEncdoe(int nWidth, int nHeight)
+int EncoderCore::initVideoEncdoe()
 {
     // 创建输出码流->创建了一块内存空间->并不知道他是什么类型流->希望他是视频流
     p_VideoStream = avformat_new_stream(p_FormatContext, NULL);
@@ -127,10 +124,10 @@ int AvEncoder::initVideoEncdoe(int nWidth, int nHeight)
     // 设置流的timebase
     p_VideoStream->time_base = (AVRational){1, pEncodeParam.pVideoOutFrameRate};
     p_VideoStream->duration = pDuration;
-    
+    pVideoStreamIndex = p_VideoStream->index;
+
     // 获取编码器上下文
     p_VideoCodecContext = p_VideoStream->codec;
-    
     p_VideoCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
     p_VideoCodecContext->pix_fmt = pEncodeParam.pVideoOutPixelFormat;
     p_VideoCodecContext->width = pEncodeParam.pVideoOutWidth;
@@ -194,6 +191,7 @@ int AvEncoder::initVideoEncdoe(int nWidth, int nHeight)
 
     }
     
+    // 这个在多线程处理的时候要加锁，之后记住优化这部分代码
     if (avcodec_open2(p_VideoCodecContext, avcodec, &param) < 0) {
         return -1;
     }
@@ -201,7 +199,7 @@ int AvEncoder::initVideoEncdoe(int nWidth, int nHeight)
     return 0;
 }
 
-int AvEncoder::initAudioEncdoe()
+int EncoderCore::initAudioEncdoe()
 {
     // 创建输出码流->创建了一块内存空间->并不知道他是什么类型流->希望他是视频流
     p_AudioStream = avformat_new_stream(p_FormatContext, NULL);
@@ -210,6 +208,7 @@ int AvEncoder::initAudioEncdoe()
     }
     p_AudioStream->duration = pDuration;
     
+    pAudioStreamIndex = p_AudioStream->index;
     p_AudioCodecContext = p_AudioStream->codec;
     p_AudioCodecContext->codec = avcodec_find_encoder(pEncodeParam.pAudioOutCodecId);
     p_AudioCodecContext->sample_rate = pEncodeParam.pAudioOutSampleRate;
@@ -232,7 +231,7 @@ int AvEncoder::initAudioEncdoe()
     return 0;
 }
 
-int AvEncoder::start()
+int EncoderCore::start()
 {
     int ret = avformat_write_header(p_FormatContext, NULL);
     if (ret < 0) {
@@ -241,7 +240,7 @@ int AvEncoder::start()
     return 0;
 }
 
-int AvEncoder::finish()
+int EncoderCore::finish()
 {
     int ret = av_write_trailer(p_FormatContext);
     if (ret < 0) {
@@ -250,7 +249,7 @@ int AvEncoder::finish()
     return 0;
 }
 
-int AvEncoder::AllocFrame()
+int EncoderCore::AllocFrame()
 {
     if (p_VideoFrame) {
         av_frame_free(&p_VideoFrame);
@@ -292,7 +291,7 @@ int AvEncoder::AllocFrame()
     return 0;
 }
 
-int AvEncoder::AudioEncode(AVFrame *frame)
+int EncoderCore::AudioEncode(AVFrame *srcframe)
 {
     int ret;
     AVPacket en_pkt;
@@ -300,10 +299,8 @@ int AvEncoder::AudioEncode(AVFrame *frame)
     en_pkt.data = NULL;
     en_pkt.size = 0;
     
-//    updateAudioFrame(frame, p_AudioFrame);
-    
     int got_frame = 0;
-    ret = avcodec_encode_audio2(p_AudioCodecContext, &en_pkt, frame, &got_frame);
+    ret = avcodec_encode_audio2(p_AudioCodecContext, &en_pkt, srcframe, &got_frame);
     if (ret < 0) {
         av_packet_unref(&en_pkt);
 
@@ -312,7 +309,7 @@ int AvEncoder::AudioEncode(AVFrame *frame)
     
     if (got_frame) {
         en_pkt.stream_index = pAudioStreamIndex;
-        en_pkt.pts = frame->pts;
+        en_pkt.pts = srcframe->pts;
         en_pkt.dts = en_pkt.pts;
         en_pkt.duration = pDuration;
             
@@ -328,33 +325,58 @@ int AvEncoder::AudioEncode(AVFrame *frame)
 }
 
 
-int AvEncoder::VideoEncode(const unsigned char *pdata)
+int EncoderCore::VideoEncode(const unsigned char *pdata)
 {
-    int ret;
-    if (NULL == pdata) {
-        return -1;
-    }
-    updateVideoFrame(pdata, p_VideoFrame);
-    ret = VideoEncode(p_VideoFrame);
-    return ret;
+    return 1;
 }
 
-int AvEncoder::VideoEncode(AVFrame *frame)
+int EncoderCore::VideoEncode(AVFrame *srcframe)
 {
     int ret;
     AVPacket en_pkt;
     av_init_packet(&en_pkt);
     en_pkt.data = NULL;
     en_pkt.size = 0;
-        
     int got_frame = 0;
+    int outWidth = pEncodeParam.pVideoOutWidth;
+    int outHeight = pEncodeParam.pVideoOutHeight;
     
-    frame->pts = av_rescale_q(pCurVideoFrameIndex++, p_VideoCodecContext->time_base, p_VideoStream->time_base);
+    AVFrame* dst_frame = av_frame_alloc();
+    dst_frame->format = pEncodeParam.pVideoOutPixelFormat;
+    dst_frame->width = outWidth;
+    dst_frame->height = outHeight;
+    
+    int dst_bytes_num = avpicture_get_size(pEncodeParam.pVideoOutPixelFormat, outWidth, outHeight);
+    uint8_t* dst_buff = (uint8_t*)av_malloc(dst_bytes_num);
 
-    ret = avcodec_encode_video2(p_VideoCodecContext, &en_pkt, frame, &got_frame);
+    avpicture_fill((AVPicture*)dst_frame, dst_buff, pEncodeParam.pVideoOutPixelFormat,
+                     outWidth, outHeight);
+    printf("%d %d %d \n", dst_frame->linesize[0],  dst_frame->linesize[1], dst_frame->linesize[2]);
+
+    if (swsScale(srcframe, dst_frame) == false) {
+        av_free(dst_buff);
+        av_frame_free(&dst_frame);
+        return -1;
+    }
+    
+    dst_frame->pts = av_rescale_q(pCurVideoFrameIndex++, p_VideoCodecContext->time_base, p_VideoStream->time_base);
+
+//    unsigned char *rgbData = new unsigned char[outWidth * outHeight * 4];
+//
+//    ret = pMediaCore->yuvTorgb(frame, rgbData, outWidth, outHeight);
+//    if (ret < 0){
+//        printf("EncoderCore: yuvTorgb fail!!!\n");
+//        SAFE_DELETE_ARRAY(rgbData);
+//        return -1;
+//    }
+//    updateVideoFrame(rgbData);
+    
+    ret = avcodec_encode_video2(p_VideoCodecContext, &en_pkt, dst_frame, &got_frame);
     if (ret < 0) {
         av_packet_unref(&en_pkt);
-
+        av_free(dst_buff);
+        av_frame_free(&dst_frame);
+        //        SAFE_DELETE_ARRAY(rgbData);
         return -1;
     }
     
@@ -369,86 +391,25 @@ int AvEncoder::VideoEncode(AVFrame *frame)
         free(en_pkt.data);
     }
     av_free_packet(&en_pkt);
+    av_free(dst_buff);
+    av_frame_free(&dst_frame);
+//    SAFE_DELETE_ARRAY(rgbData);
     return 0;
-    
-//    AVPacket en_pkt = {0};
-//    av_init_packet(&en_pkt);
-//
-////    av_frame_move_ref(p_VideoFrame, frame);
-//    int ret = avcodec_send_frame(p_VideoCodecContext, frame);
-//    if (ret < 0) {
-//        free(en_pkt.data);
-//        av_packet_unref(&en_pkt);
-//        return -1;
-//    }
-////    av_frame_unref(p_VideoFrame);
-//    ret = avcodec_receive_packet(p_VideoCodecContext, &en_pkt);
-//    if(ret == 0) {
-//        //编码成功
-//        printf("dts = %ld, pts = %d, duration = %d\n",en_pkt.dts, en_pkt.pts, en_pkt.duration);
-//        // 将视频压缩数据-写入到输出文件中-outFilePath;
-//        en_pkt.stream_index = pVideoStreamIndex;
-//        en_pkt.duration = pDuration;
-//        //    frame->pts = av_rescale_q(pCurVideoFrameIndex++, p_VideoCodecContext->time_base, p_VideoStream->time_base);
-//
-//        int result = av_interleaved_write_frame(p_FormatContext, &en_pkt);
-//        if (result < 0) {
-//            free(en_pkt.data);
-//            av_packet_unref(&en_pkt);
-//            return -1;
-//        }
-//    } else {
-//        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-//            ;
-//        } else {
-//            printf("Error during encoding\n");
-//        }
-//        free(en_pkt.data);
-//        av_packet_unref(&en_pkt);
-//        return -1;
-//    }
-//    free(en_pkt.data);
-//    av_free_packet(&en_pkt);
-//
-//    return 0;
 }
 
-int AvEncoder::updateVideoFrame(const unsigned char *pdata, AVFrame *frame)
+int EncoderCore::updateVideoFrame(const unsigned char *pdata)
 {
-    if (NULL == p_SwsContex) {
-        return -1;
-    }
-    
-    AVFrame * tempFrame = av_frame_alloc();
-    tempFrame->format = pEncodeParam.pVideoInPixelFormat;
-    
-    avpicture_fill((AVPicture *)tempFrame, pdata, pEncodeParam.pVideoInPixelFormat, pWidth, pHeight);
-    
-    tempFrame->data[0] += tempFrame->linesize[0] * (pHeight - 1);
-    tempFrame->linesize[0] *= -1;
-    
-    sws_scale(p_SwsContex, tempFrame->data, tempFrame->linesize, 0, pHeight, frame->data, frame->linesize);
-    
-    frame->data[0] += frame->linesize[0] * (pEncodeParam.pVideoOutHeight - 1);
-    frame->linesize[0] *= -1;
-    frame->data[1] += frame->linesize[1] * ((pEncodeParam.pVideoOutHeight >> 1) - 1);
-    frame->linesize[1] *= -1;
-    frame->data[2] += frame->linesize[2] * ((pEncodeParam.pVideoOutHeight >> 1) - 1);
-    frame->linesize[2] *= -1;
-    
-    frame->pts = av_rescale_q(pCurVideoFrameIndex++, p_VideoCodecContext->time_base, p_VideoStream->time_base);
-    av_frame_free(&tempFrame);
     return 0;
 }
 
-int AvEncoder::updateAudioFrame(AVFrame *frameIn, AVFrame *frameOut)
+int EncoderCore::updateAudioFrame(AVFrame *frameIn, AVFrame *frameOut)
 {
     
     frameOut->pts = pCurAudioFrameIndex * p_AudioCodecContext->frame_size;
     return 0;
 }
 
-int AvEncoder::flushAudioEncode()
+int EncoderCore::flushAudioEncode()
 {
     int ret = 0;
     int got_frame;
@@ -483,7 +444,7 @@ int AvEncoder::flushAudioEncode()
     return ret;
 }
 
-int AvEncoder::flushVideoEncode()
+int EncoderCore::flushVideoEncode()
 {
     int ret = 0;
     int got_frame;
@@ -516,5 +477,70 @@ int AvEncoder::flushVideoEncode()
     }
     return ret;
 }
+
+
+bool EncoderCore::SwsContextInit(AVPixelFormat srcAvFormat, int srcWidth, int srcHeigth, AVPixelFormat dstAvFormat, int dstWidth, int dstHeigth)
+{
+    if (p_SwsContex) {
+        sws_freeContext(p_SwsContex);
+        p_SwsContex = NULL;
+    }
+
+    p_SwsContex = sws_getContext(srcWidth, srcHeigth, srcAvFormat, dstWidth, dstHeigth, dstAvFormat, SWS_BICUBIC, NULL, NULL, NULL);
+    
+    if (!p_SwsContex) {
+        printf("mediaCore: sws_getCachedContext error\n");
+        return false;
+    }
+    return true;
+}
+
+
+bool EncoderCore::swsScale(AVFrame *inframe, AVFrame *outframe)
+{
+    if (NULL == p_SwsContex || NULL == inframe || NULL == outframe) {
+        printf("mediaCore: frame or sws_ctx is NULL\n");
+        return false;
+    }
+    int height = sws_scale(p_SwsContex,
+                              (const uint8_t **)inframe->data,
+                              inframe->linesize,
+                              0,
+                              inframe->height,
+                              outframe->data,
+                              outframe->linesize
+                            );
+    if(height <= 0) {
+        printf("mediaCore: sws_scale error\n");
+        return false;
+    }
+    return true;
+}
+
+//bool EncoderCore::yuvTorgb(AVFrame *inframe, unsigned char *outData, int& nWidth, int& nHeight)
+//{
+//    if (NULL == sws_ctx || NULL == inframe || NULL == outData
+//        || nWidth <= 0 || nHeight <= 0 ) {
+//        printf("mediaCore: frame or sws_ctx is NULL\n");
+//        return false;
+//    }
+//    uint8_t *data[AV_NUM_DATA_POINTERS] = {0};
+//    data[0] = (uint8_t *)outData;
+//    int lines[AV_NUM_DATA_POINTERS] = {0};
+//    lines[0] = nWidth * 4;
+//    int height = sws_scale(sws_ctx,
+//                              (const uint8_t **)inframe->data,
+//                              inframe->linesize,
+//                              0,
+//                              inframe->height,
+//                              data,
+//                              lines
+//                            );
+//    if(height <= 0) {
+//        printf("mediaCore: sws_scale error\n");
+//        return false;
+//    }
+//    return true;
+//}
 
 NS_MEDIA_END

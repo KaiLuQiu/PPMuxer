@@ -1,25 +1,26 @@
 //
-//  AvEncoder.h
+//  EncoderCore.h
 //  PPEncoder
 //
 //  Created by 邱开禄 on 2019/12/31.
 //  Copyright © 2019 邱开禄. All rights reserved.
 //
 
-#ifndef AvEncoder_H
-#define AvEncoder_H
+#ifndef EncoderCore_H
+#define EncoderCore_H
 #include "MediaCommon.h"
+#include "mediaCore.h"
 
 NS_MEDIA_BEGIN
-class AvEncoder {
+class EncoderCore {
 public:
-    AvEncoder();
-    ~AvEncoder();
+    EncoderCore();
+    ~EncoderCore();
     
     /*
-     * AvEncoder初始化
+     * EncoderCore初始化
      */
-    int init(const char* fileName, int nWidth, int nHeight, int duration, EncodeParam param);
+    int init(const char* fileName, int duration, EncodeParam param);
     
     /*
      * 开始编码
@@ -39,12 +40,12 @@ public:
     /*
      * 输入frame进行video编码过程
      */
-    int VideoEncode(AVFrame *frame);
+    int VideoEncode(AVFrame *srcframe);
 
     /*
      * 输入frame进行audio编码过程
      */
-    int AudioEncode(AVFrame *frame);
+    int AudioEncode(AVFrame *srcframe);
     
     /*
      * flush编码器
@@ -55,8 +56,14 @@ public:
      * flush编码器
      */
     int flushAudioEncode();
+    
+
+    bool swsScale(AVFrame *inframe, AVFrame *outframe);
+    
+    bool yuvTorgb(AVFrame *inframe, unsigned char *outData, int& nWidth, int& nHeight);
 private:
 
+    bool SwsContextInit(AVPixelFormat srcAvFormat,  int srcWidth, int srcHeigth, AVPixelFormat dstAvFormat, int dstWidth, int dstHeigth);
     /*
      * 初始化audio编码器
      */
@@ -65,12 +72,12 @@ private:
     /*
      * 初始化video编码器
      */
-    int initVideoEncdoe(int nWidth, int nHeight);
+    int initVideoEncdoe();
     
     /*
      * data转frame
      */
-    int updateVideoFrame(const unsigned char *pdata, AVFrame *frame);
+    int updateVideoFrame(const unsigned char *pdata);
 
     /*
      * data转frame
@@ -81,7 +88,6 @@ private:
      * 分配frame内存
      */
     int AllocFrame();
-
     AVCodecContext      *p_VideoCodecContext;   // video解码上下文信息
     AVCodecContext      *p_AudioCodecContext;   // Audio解码上下文信息
     
@@ -89,8 +95,9 @@ private:
     AVStream            *p_AudioStream;         // 音频流
     
     AVFormatContext     *p_FormatContext;       // 媒体流format上下文信息
+    // 视频格式转换上下文
     SwsContext          *p_SwsContex;
-
+    
     AVOutputFormat      *p_OutFormat;           // 输出格式的信息
     AVFrame             *p_VideoFrame;          // 解码的视频帧
     AVFrame             *p_AudioFrame;          // 解码的音频帧
@@ -108,9 +115,10 @@ private:
     
     int                 pVideoStreamIndex;
     int                 pAudioStreamIndex;
+    
 
 };
 
 NS_MEDIA_END
 
-#endif // AvEncoder_H
+#endif // EncoderCore_H

@@ -103,7 +103,7 @@ bool PPEncoder::prepareAsync()
         // 初始化videodecoder，主要是startPacketQueue
         p_AudioDecoderThread->init(pPlayerContext, p_Handler, p_MediaCore);
         
-        p_EncoderThread->init(pPlayerContext, p_Handler, pEncodeParams, pOutFilePath.c_str());
+        p_EncoderThread->init(pPlayerContext, p_Handler, p_MediaCore, pEncodeParams, pOutFilePath.c_str());
         // 开启demuxer线程读取数据包
         p_DemuxerThread->start();
         // videoDecode和audioDecode可以在prepareAsync的时候就开启，当显示线程则不可。为了加快第一帧的show

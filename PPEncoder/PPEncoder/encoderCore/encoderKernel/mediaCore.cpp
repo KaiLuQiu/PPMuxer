@@ -16,10 +16,10 @@ NS_MEDIA_BEGIN
 // 输入流InputStream下的pts和dts以AV_TIME_BASE为单位(微秒)，至于为什么要转化为微秒，可能是为了避免使用浮点数.
 // 输出流OutputStream涉及音视频同步，结构和InputStream不同，暂时只作记录，不分析。
 
-mediaCore::mediaCore()
+mediaCore::mediaCore():
+pHandler(NULL),
+swr_ctx(NULL)
 {
-    pHandler = NULL;
-    swr_ctx = NULL;
     // 挂载demuxer filter muxer decoder等
     av_register_all();
     avformat_network_init();
@@ -47,6 +47,7 @@ bool mediaCore::Init(PlayerContext *playerContext, EventHandler *handler)
     return true;
 }
 
+/********************************************decode*****************************************/
 bool mediaCore::StreamOpen(std::string pUrl)
 {
     int seek_by_bytes = -1;
@@ -147,7 +148,6 @@ bool mediaCore::OpenVideoDecode(int streamIndex)
     }
     return true;
 }
-
 
 bool mediaCore::OpenAudioDecode(int streamIndex)
 {
@@ -272,7 +272,6 @@ int mediaCore::Seek(float pos, int type)
     return ret;
 }
 
-
 int mediaCore::ResSampleInit(Frame* pFrame, int64_t dec_channel_layout)
 {
     if(swr_ctx == NULL) {
@@ -337,5 +336,6 @@ int mediaCore::audioResample(uint8_t **out, int out_samples, AVFrame* frame)
     return resampled_data_size;
     
 }
+
 NS_MEDIA_END
 

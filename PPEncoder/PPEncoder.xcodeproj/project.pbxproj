@@ -24,7 +24,7 @@
 		3604E91E23801C6300E693D4 /* video in Resources */ = {isa = PBXBuildFile; fileRef = 3604E91D23801C6300E693D4 /* video */; };
 		36676C9323BF8B6F00AF7208 /* PPEncoderController.m in Sources */ = {isa = PBXBuildFile; fileRef = 36676C9123BF8B6F00AF7208 /* PPEncoderController.m */; };
 		36676CA023BF8C9F00AF7208 /* AvEncodeThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676C9A23BF8C9E00AF7208 /* AvEncodeThread.cpp */; };
-		36676CA123BF8C9F00AF7208 /* AvEncoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676C9D23BF8C9E00AF7208 /* AvEncoder.cpp */; };
+		36676CA123BF8C9F00AF7208 /* EncoderCore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676C9D23BF8C9E00AF7208 /* EncoderCore.cpp */; };
 		36676CA423BF8CDD00AF7208 /* PPEncoderMidlle.mm in Sources */ = {isa = PBXBuildFile; fileRef = 36676CA323BF8CDD00AF7208 /* PPEncoderMidlle.mm */; };
 		36676CCB23BF920A00AF7208 /* DemuxThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CBC23BF920900AF7208 /* DemuxThread.cpp */; };
 		36676CCC23BF920A00AF7208 /* VideoDecodeThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36676CBE23BF920900AF7208 /* VideoDecodeThread.cpp */; };
@@ -182,8 +182,8 @@
 		36676C9223BF8B6F00AF7208 /* PPEncoderController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPEncoderController.h; sourceTree = "<group>"; };
 		36676C9A23BF8C9E00AF7208 /* AvEncodeThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AvEncodeThread.cpp; sourceTree = "<group>"; };
 		36676C9B23BF8C9E00AF7208 /* AvEncodeThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AvEncodeThread.h; sourceTree = "<group>"; };
-		36676C9C23BF8C9E00AF7208 /* AvEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AvEncoder.h; sourceTree = "<group>"; };
-		36676C9D23BF8C9E00AF7208 /* AvEncoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AvEncoder.cpp; sourceTree = "<group>"; };
+		36676C9C23BF8C9E00AF7208 /* EncoderCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EncoderCore.h; sourceTree = "<group>"; };
+		36676C9D23BF8C9E00AF7208 /* EncoderCore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EncoderCore.cpp; sourceTree = "<group>"; };
 		36676C9E23BF8C9E00AF7208 /* MediaCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MediaCommon.h; sourceTree = "<group>"; };
 		36676CA223BF8CDD00AF7208 /* PPEncoderMidlle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPEncoderMidlle.h; sourceTree = "<group>"; };
 		36676CA323BF8CDD00AF7208 /* PPEncoderMidlle.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PPEncoderMidlle.mm; sourceTree = "<group>"; };
@@ -635,8 +635,8 @@
 				36676CB923BF920900AF7208 /* VideoDecodeThread.h */,
 				36676C9A23BF8C9E00AF7208 /* AvEncodeThread.cpp */,
 				36676C9B23BF8C9E00AF7208 /* AvEncodeThread.h */,
-				36676C9C23BF8C9E00AF7208 /* AvEncoder.h */,
-				36676C9D23BF8C9E00AF7208 /* AvEncoder.cpp */,
+				36676C9C23BF8C9E00AF7208 /* EncoderCore.h */,
+				36676C9D23BF8C9E00AF7208 /* EncoderCore.cpp */,
 			);
 			path = encoderKernel;
 			sourceTree = "<group>";
@@ -1088,7 +1088,7 @@
 				36676CCC23BF920A00AF7208 /* VideoDecodeThread.cpp in Sources */,
 				36676C9323BF8B6F00AF7208 /* PPEncoderController.m in Sources */,
 				36676CD323BF920A00AF7208 /* messageQueue.cpp in Sources */,
-				36676CA123BF8C9F00AF7208 /* AvEncoder.cpp in Sources */,
+				36676CA123BF8C9F00AF7208 /* EncoderCore.cpp in Sources */,
 				36676CCB23BF920A00AF7208 /* DemuxThread.cpp in Sources */,
 				36676CE123C1928000AF7208 /* Message.cpp in Sources */,
 				36676CE223C1928000AF7208 /* EventHandler.cpp in Sources */,

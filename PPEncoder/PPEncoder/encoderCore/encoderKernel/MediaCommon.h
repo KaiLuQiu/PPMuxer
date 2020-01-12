@@ -304,12 +304,14 @@ typedef struct DecoderContext_T {
 
 typedef struct EncodeParam_T{
     EncodeParam_T() {
-        pVideoInPixelFormat = AV_PIX_FMT_BGRA;
+        pVideoInPixelFormat = AV_PIX_FMT_YUV420P;
+        pVideoInWidth = -1;
+        pVideoInHeight = -1;
         pVideoOutPixelFormat = AV_PIX_FMT_YUV420P;
         pVideoOutCodecId = AV_CODEC_ID_H264;
         pVideoOutFrameRate = 30;
-        pVideoOutWidth = 544;
-        pVideoOutHeight = 960;
+        pVideoOutWidth = 1080;
+        pVideoOutHeight = 1920;
         pAudioOutChannels = 2;
         pAudioOutChannelLayout = AV_CH_LAYOUT_STEREO;
         pAudioOutCodecId = AV_CODEC_ID_AAC;
@@ -322,6 +324,8 @@ typedef struct EncodeParam_T{
         
     }
     AVPixelFormat   pVideoInPixelFormat;
+    int             pVideoInWidth;
+    int             pVideoInHeight;
     AVPixelFormat   pVideoOutPixelFormat;
     AVCodecID       pVideoOutCodecId;
     int             pVideoOutFrameRate;

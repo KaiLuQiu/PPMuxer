@@ -29,6 +29,7 @@ public:
      */
     bool Init(PlayerContext *playerContext, EventHandler *handler);
 
+    /********************************************decode*****************************************/
     /*
      * 根据url打开流信息
      */
@@ -63,7 +64,7 @@ public:
      * audio frame重采样
      */
     int audioResample(uint8_t **out, int out_samples, AVFrame* frame);
-
+    
     /*
      * 初始化，挂载demuxer filter muxer decoder等
      */
@@ -79,10 +80,9 @@ private:
      * 开启audio解码器
      */
     bool OpenAudioDecode(int streamIndex);
-    AVDictionary  *codec_opts;
+    AVDictionary        *codec_opts;
     // 音视频转码上下文
-    SwrContext *swr_ctx;
-    
+    SwrContext          *swr_ctx;
     EventHandler        *pHandler;
     PlayerContext       *p_PlayerContext;
     SDL_mutex           *pMutex;

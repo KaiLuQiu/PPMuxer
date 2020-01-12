@@ -119,7 +119,6 @@ typedef struct PlayerContext_T {
     
     PacketQueueFunc *videoPacketQueueFunc;
     PacketQueueFunc *audioPacketQueueFunc;
-
 }PlayerContext;
 
 

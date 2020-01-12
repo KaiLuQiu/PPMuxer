@@ -12,11 +12,12 @@
 NS_MEDIA_BEGIN
 AvEncodeThread::AvEncodeThread():
 pNeedStop(0),
-pPause(false)
+pPause(false),
+pHandler(NULL),
+pMediaCore(NULL),
+pPlayerContext(NULL)
 {
-    pPlayerContext = NULL;
-    pHandler = NULL;
-    pEncoder = new (std::nothrow)AvEncoder();
+    pEncoder = new (std::nothrow)EncoderCore();
     if(!pEncoder) {
         printf("AvEncodeThread: new pEncoder fail!!! \n");
     }
@@ -33,19 +34,28 @@ AvEncodeThread::~AvEncodeThread()
     SAFE_DELETE(pEncoder);
 }
 
-bool AvEncodeThread::init(PlayerContext *playerContext, EventHandler *handler, EncodeParam params, const char *outFile)
+bool AvEncodeThread::init(PlayerContext *playerContext, EventHandler *handler, mediaCore *p_Core, EncodeParam params, const char *outFile)
 {
-    if (NULL == handler || NULL == playerContext
+    if (NULL == handler || NULL == playerContext || NULL == p_Core
         || NULL == pEncoder || NULL == outFile)
         return false;
     pPlayerContext = playerContext;
     pHandler = handler;
+    pMediaCore = p_Core;
     
     int duration = playerContext->ic->duration;
-    int nWidth = playerContext->width;
-    int nHeight = playerContext->height;
     
-    pEncoder->init(outFile, nWidth, nHeight, duration, params);
+    // 解码的格式与宽高信息
+    AVCodecContext *p_CodecContex = pPlayerContext->ic->streams[pPlayerContext->videoStreamIndex]->codec;
+    if (p_CodecContex->pix_fmt == AV_PIX_FMT_NONE)
+    {
+        // 如果发现解封装后无pix_fmt，将强制为420
+        p_CodecContex->pix_fmt = AV_PIX_FMT_YUV420P;
+    }
+    params.pVideoInPixelFormat = p_CodecContex->pix_fmt;
+    params.pVideoInWidth = p_CodecContex->width;
+    params.pVideoInHeight = p_CodecContex->height;
+    pEncoder->init(outFile, duration, params);
     
     return true;
 }

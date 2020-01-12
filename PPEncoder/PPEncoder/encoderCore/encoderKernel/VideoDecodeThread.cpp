@@ -12,9 +12,10 @@
 
 NS_MEDIA_BEGIN
 
-VideoDecodeThread::VideoDecodeThread()
+VideoDecodeThread::VideoDecodeThread():
+pHandler(NULL),
+pMediaCore(NULL)
 {
-    pHandler = NULL;
 }
 
 VideoDecodeThread::~VideoDecodeThread()
