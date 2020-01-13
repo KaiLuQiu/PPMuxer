@@ -319,6 +319,7 @@ typedef struct EncodeParam_T{
         pAudioOutSampleRate = 44100;
         // float, planar
         pAudioOutSample_fmt = AV_SAMPLE_FMT_FLTP;
+        pAudioInChannelLayout = AV_CH_LAYOUT_STEREO;
     }
     ~EncodeParam_T() {
         
@@ -337,6 +338,7 @@ typedef struct EncodeParam_T{
     int             pAudioOutSampleSize;
     int             pAudioOutSampleRate;
     AVSampleFormat  pAudioOutSample_fmt;
+    uint64_t        pAudioInChannelLayout;
 }EncodeParam;
 #endif
 

@@ -60,7 +60,7 @@ private:
     EventHandler    *pHandler;
     mediaCore       *pMediaCore;
 
-    int needStop;
+    int             needStop;
 };
 
 

@@ -57,11 +57,13 @@ public:
      */
     int flushAudioEncode();
     
+    int audioResample(uint8_t **out, int out_samples, AVFrame* frame);
 
     bool swsScale(AVFrame *inframe, AVFrame *outframe);
     
     bool yuvTorgb(AVFrame *inframe, unsigned char *outData, int& nWidth, int& nHeight);
 private:
+    int ResSampleInit(AVFrame* inframe, int64_t dec_channel_layout);
 
     bool SwsContextInit(AVPixelFormat srcAvFormat,  int srcWidth, int srcHeigth, AVPixelFormat dstAvFormat, int dstWidth, int dstHeigth);
     /*
@@ -84,10 +86,6 @@ private:
      */
     int updateAudioFrame(AVFrame *frameIn, AVFrame *frameOut);
     
-    /*
-     * 分配frame内存
-     */
-    int AllocFrame();
     AVCodecContext      *p_VideoCodecContext;   // video解码上下文信息
     AVCodecContext      *p_AudioCodecContext;   // Audio解码上下文信息
     
@@ -95,11 +93,12 @@ private:
     AVStream            *p_AudioStream;         // 音频流
     
     AVFormatContext     *p_FormatContext;       // 媒体流format上下文信息
-    // 视频格式转换上下文
+
     SwsContext          *p_SwsContex;
+    // 音视频转码上下文
+    SwrContext          *p_SwrContex;
     
     AVOutputFormat      *p_OutFormat;           // 输出格式的信息
-    AVFrame             *p_VideoFrame;          // 解码的视频帧
     AVFrame             *p_AudioFrame;          // 解码的音频帧
 
     long                pCurVideoFrameIndex;    // 当前视频编码的帧索引
@@ -115,8 +114,6 @@ private:
     
     int                 pVideoStreamIndex;
     int                 pAudioStreamIndex;
-    
-
 };
 
 NS_MEDIA_END
