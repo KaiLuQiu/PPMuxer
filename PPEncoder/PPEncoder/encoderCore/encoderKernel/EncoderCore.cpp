@@ -253,53 +253,47 @@ int EncoderCore::AudioEncode(AVFrame *srcframe)
     av_init_packet(&en_pkt);
     en_pkt.data = NULL;
     en_pkt.size = 0;
-//    
-////    if (srcframe->format != pEncodeParam.pAudioOutSample_fmt ||
-////        pEncodeParam.pAudioInChannelLayout != pEncodeParam.pAudioOutChannelLayout ||
-////        srcframe->sample_rate != pEncodeParam.pAudioOutSampleRate) {
-////        // 根据pFrame的信息更新重采样器
-////        if(ResSampleInit(srcframe, pEncodeParam.pAudioInChannelLayout) < 0) {
-////        }
-////    }
-//    if (!p_SwrContex) {
-//        ResSampleInit(srcframe, pEncodeParam.pAudioInChannelLayout);
-////        printf("EncoderCore: p_SwrContex init fail!!!\n");
-////        return -1;
-//    }
-//
-//    // 进行重采样过程
-//    // 重采样输出参数：输出音频样本数(多加了256个样本)
-//    int out_count = (int64_t)srcframe->nb_samples * pEncodeParam.pAudioOutSampleRate / srcframe->sample_rate + 256;
-//    // 计算BufferSize, 编码每一帧的字节数
-//    int out_size  = av_samples_get_buffer_size(NULL, pEncodeParam.pAudioOutChannels, out_count, pEncodeParam.pAudioOutSample_fmt, 0);
-//    // new一块新的内存地址
-//    uint8_t *bufferAddr = (uint8_t *)av_malloc(out_size);
-//    // 音频重采样
-//    int bufferSize = audioResample(&bufferAddr, out_count, srcframe);
-//    
-//    AVFrame* dst_frame = av_frame_alloc();
-//    dst_frame->nb_samples = pEncodeParam.pAudioOutSampleSize;
-//    dst_frame->channel_layout = pEncodeParam.pAudioOutChannelLayout;
-//    dst_frame->format = pEncodeParam.pAudioOutSample_fmt;
-//    dst_frame->sample_rate = pEncodeParam.pAudioOutSampleRate;
-//
-//    //一次读取一帧音频的字节数
-////    readSize = frame->nb_samples * channels * sampleByte;
-////    char *buf = new char[readSize];
-//
-//    avcodec_fill_audio_frame(dst_frame, pEncodeParam.pAudioOutChannels, pEncodeParam.pAudioOutSample_fmt,
-//                             (const uint8_t *) bufferAddr, out_size, 0);
+    
+    if (srcframe->format != pEncodeParam.pAudioOutSample_fmt ||
+        pEncodeParam.pAudioInChannelLayout != pEncodeParam.pAudioOutChannelLayout ||
+        srcframe->sample_rate != pEncodeParam.pAudioOutSampleRate ||
+        srcframe->nb_samples != pEncodeParam.pAudioOutSampleSize ||
+        !p_SwrContex) {
+        // 根据pFrame的信息更新重采样器
+        if(ResSampleInit(srcframe, pEncodeParam.pAudioInChannelLayout) < 0) {
+        }
+    }
+    
+    // 进行重采样过程
+    if (p_SwrContex) {
+        AVFrame* dst_frame = av_frame_alloc();
+        dst_frame->nb_samples = pEncodeParam.pAudioOutSampleSize;
+        dst_frame->channel_layout = pEncodeParam.pAudioOutChannelLayout;
+        dst_frame->format = pEncodeParam.pAudioOutSample_fmt;
+        dst_frame->sample_rate = pEncodeParam.pAudioOutSampleRate;
 
-    // 音频编码之前需要进行重采样
-    ret = avcodec_encode_audio2(p_AudioCodecContext, &en_pkt, srcframe, &got_frame);
-    if (ret < 0) {
-        av_packet_unref(&en_pkt);
-        return -1;
+        int error = swr_convert_frame(p_SwrContex, dst_frame, srcframe);
+        if(error < 0) {
+            printf("EncoderCore: swr_convert_frame fail!!!\n");
+            return -1;
+        }
+        // 音频编码之前需要进行重采样
+        ret = avcodec_encode_audio2(p_AudioCodecContext, &en_pkt, dst_frame, &got_frame);
+        if (ret < 0) {
+            av_packet_unref(&en_pkt);
+            return -1;
+        }
+        av_frame_free(&dst_frame);
+    } else {
+        ret = avcodec_encode_audio2(p_AudioCodecContext, &en_pkt, srcframe, &got_frame);
+        if (ret < 0) {
+            av_packet_unref(&en_pkt);
+            return -1;
+        }
     }
     
     if (got_frame) {
         en_pkt.stream_index = pAudioStreamIndex;
-//        en_pkt.pts = srcframe->pts;
         en_pkt.pts = av_rescale_q(pCurAudioFrameIndex++, p_AudioCodecContext->time_base, p_AudioStream->time_base);
         en_pkt.dts = en_pkt.pts;
         en_pkt.duration = pDuration;
@@ -315,7 +309,6 @@ int EncoderCore::AudioEncode(AVFrame *srcframe)
     av_free_packet(&en_pkt);
     return 0;
 }
-
 
 int EncoderCore::VideoEncode(const unsigned char *pdata)
 {
@@ -356,7 +349,7 @@ int EncoderCore::VideoEncode(AVFrame *srcframe)
     // avstream里的 time_base 是单元时间 在av_write_header里设置的
     // AVCodecContex里的 time_base 表示帧率用户设置的
     // 在编码过程中，通过这两个time_base 和 pts 可以计算（av_rescale_q）出编码packet里的实际pts
-//    dst_frame->pts = av_rescale_q(pCurVideoFrameIndex++, p_VideoCodecContext->time_base, p_VideoStream->time_base);
+    dst_frame->pts = av_rescale_q(pCurVideoFrameIndex++, p_VideoCodecContext->time_base, p_VideoStream->time_base);
     
     ret = avcodec_encode_video2(p_VideoCodecContext, &en_pkt, dst_frame, &got_frame);
     
@@ -540,11 +533,12 @@ int EncoderCore::ResSampleInit(AVFrame* inframe, int64_t dec_channel_layout)
     
     // 对音频转上下文设置参数信息
     // 使用pFrame(源)和p_PlayerContext->audioInfoTarget(目标)中的音频参数来设置p_SwrContex
-    p_SwrContex = swr_alloc_set_opts(NULL, pEncodeParam.pAudioOutChannelLayout, pEncodeParam.pAudioOutSample_fmt,
+    p_SwrContex = swr_alloc_set_opts(p_SwrContex, pEncodeParam.pAudioOutChannelLayout, pEncodeParam.pAudioOutSample_fmt,
                        pEncodeParam.pAudioOutSampleRate, dec_channel_layout, (AVSampleFormat)inframe->format, inframe->sample_rate,
                        0, NULL);
 
-    if (!p_SwrContex || swr_init(p_SwrContex) < 0) {
+    
+    if (swr_init(p_SwrContex) < 0) {
         av_log(NULL, AV_LOG_ERROR,
                "Cannot create sample rate converter for conversion of %d Hz %s %d channels to %d Hz %s %d channels!\n",
                inframe->sample_rate, av_get_sample_fmt_name((AVSampleFormat)inframe->format), inframe->channels,
