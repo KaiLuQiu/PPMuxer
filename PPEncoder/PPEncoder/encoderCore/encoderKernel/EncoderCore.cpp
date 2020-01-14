@@ -254,6 +254,12 @@ int EncoderCore::AudioEncode(AVFrame *srcframe)
     en_pkt.data = NULL;
     en_pkt.size = 0;
     
+    srcframe->pts = av_rescale_q(pCurAudioFrameIndex, p_AudioStream->time_base, p_AudioCodecContext->time_base);
+    printf("AudioEncode audio pts %d\n", srcframe->pts);
+//    frame->pts = av_rescale_q(frame->pts, av_codec_get_pkt_timebase(codecContext->codecContext), tb);
+
+//    apts += av_rescale_q(frame->nb_samples, av, pCodecCtx->time_base);
+
     if (srcframe->format != pEncodeParam.pAudioOutSample_fmt ||
         pEncodeParam.pAudioInChannelLayout != pEncodeParam.pAudioOutChannelLayout ||
         srcframe->sample_rate != pEncodeParam.pAudioOutSampleRate ||
@@ -273,6 +279,8 @@ int EncoderCore::AudioEncode(AVFrame *srcframe)
         dst_frame->sample_rate = pEncodeParam.pAudioOutSampleRate;
 
         int error = swr_convert_frame(p_SwrContex, dst_frame, srcframe);
+        pCurAudioFrameIndex += dst_frame->nb_samples;
+
         if(error < 0) {
             printf("EncoderCore: swr_convert_frame fail!!!\n");
             return -1;
@@ -285,6 +293,7 @@ int EncoderCore::AudioEncode(AVFrame *srcframe)
         }
         av_frame_free(&dst_frame);
     } else {
+        pCurAudioFrameIndex += srcframe->nb_samples;
         ret = avcodec_encode_audio2(p_AudioCodecContext, &en_pkt, srcframe, &got_frame);
         if (ret < 0) {
             av_packet_unref(&en_pkt);
@@ -294,7 +303,7 @@ int EncoderCore::AudioEncode(AVFrame *srcframe)
     
     if (got_frame) {
         en_pkt.stream_index = pAudioStreamIndex;
-        en_pkt.pts = av_rescale_q(pCurAudioFrameIndex++, p_AudioCodecContext->time_base, p_AudioStream->time_base);
+//        en_pkt.pts = av_rescale_q(pCurAudioFrameIndex++, p_AudioStream->time_base, p_AudioCodecContext->time_base);
         en_pkt.dts = en_pkt.pts;
         en_pkt.duration = pDuration;
         printf("audio dts = %ld, pts = %d, duration = %d\n",en_pkt.dts, en_pkt.pts, en_pkt.duration);
@@ -350,7 +359,7 @@ int EncoderCore::VideoEncode(AVFrame *srcframe)
     // AVCodecContex里的 time_base 表示帧率用户设置的
     // 在编码过程中，通过这两个time_base 和 pts 可以计算（av_rescale_q）出编码packet里的实际pts
     dst_frame->pts = av_rescale_q(pCurVideoFrameIndex++, p_VideoCodecContext->time_base, p_VideoStream->time_base);
-    
+    printf("VideoEncode video pts %d\n", dst_frame->pts);
     ret = avcodec_encode_video2(p_VideoCodecContext, &en_pkt, dst_frame, &got_frame);
     
     if (ret < 0) {
@@ -361,7 +370,7 @@ int EncoderCore::VideoEncode(AVFrame *srcframe)
     }
     
     if (got_frame) {
-        printf("video dts = %ld, pts = %d, duration = %d\n",en_pkt.dts, en_pkt.pts, en_pkt.duration);
+//        printf("video dts = %ld, pts = %d, duration = %d\n",en_pkt.dts, en_pkt.pts, en_pkt.duration);
         en_pkt.stream_index = pVideoStreamIndex;
         en_pkt.duration = pDuration;
         av_interleaved_write_frame(p_FormatContext, &en_pkt);
