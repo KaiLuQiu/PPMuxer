@@ -53,6 +53,7 @@ bool AvEncodeThread::init(PlayerContext *playerContext, EventHandler *handler, E
     params.pVideoInPixelFormat = p_CodecContex->pix_fmt;
     params.pVideoInWidth = p_CodecContex->width;
     params.pVideoInHeight = p_CodecContex->height;
+    params.pAudioInChannelLayout = playerContext->audioInfo.channel_layout;
     pEncoder->init(outFile, duration, params);
     
     return true;
@@ -132,7 +133,10 @@ void AvEncodeThread::run()
                 }
 
                 //暂时不做av sync操作，带音频模块的接入
-                pEncoder->VideoEncode(vp->frame);
+                if(pEncoder->VideoEncode(vp->frame))
+                {
+                    
+                }
                 FrameQueueFunc::frame_queue_next(&pPlayerContext->videoDecodeRingBuffer);
             }
         }
@@ -158,6 +162,11 @@ void AvEncodeThread::run()
             if(NULL == pFrame) {
                 continue;
             }
+           if(pEncoder->AudioEncode(pFrame->frame))
+           {
+               
+           }
+
         }
     }
 }
