@@ -254,11 +254,9 @@ int EncoderCore::AudioEncode(AVFrame *srcframe)
     en_pkt.data = NULL;
     en_pkt.size = 0;
     
-    srcframe->pts = av_rescale_q(pCurAudioFrameIndex, p_AudioStream->time_base, p_AudioCodecContext->time_base);
-    printf("AudioEncode audio pts %d\n", srcframe->pts);
-//    frame->pts = av_rescale_q(frame->pts, av_codec_get_pkt_timebase(codecContext->codecContext), tb);
-
-//    apts += av_rescale_q(frame->nb_samples, av, pCodecCtx->time_base);
+    // 将时间转化为流时间
+    int64_t apts = av_rescale_q(pCurAudioFrameIndex, p_AudioCodecContext->time_base, p_AudioStream->time_base);
+    printf("AudioEncode audio pts %d\n", apts);
 
     if (srcframe->format != pEncodeParam.pAudioOutSample_fmt ||
         pEncodeParam.pAudioInChannelLayout != pEncodeParam.pAudioOutChannelLayout ||
@@ -277,15 +275,15 @@ int EncoderCore::AudioEncode(AVFrame *srcframe)
         dst_frame->channel_layout = pEncodeParam.pAudioOutChannelLayout;
         dst_frame->format = pEncodeParam.pAudioOutSample_fmt;
         dst_frame->sample_rate = pEncodeParam.pAudioOutSampleRate;
-
+        dst_frame->pts = apts;
+        
         int error = swr_convert_frame(p_SwrContex, dst_frame, srcframe);
-        pCurAudioFrameIndex += dst_frame->nb_samples;
-
         if(error < 0) {
             printf("EncoderCore: swr_convert_frame fail!!!\n");
             return -1;
         }
         // 音频编码之前需要进行重采样
+        pCurAudioFrameIndex += dst_frame->nb_samples;
         ret = avcodec_encode_audio2(p_AudioCodecContext, &en_pkt, dst_frame, &got_frame);
         if (ret < 0) {
             av_packet_unref(&en_pkt);
@@ -293,6 +291,7 @@ int EncoderCore::AudioEncode(AVFrame *srcframe)
         }
         av_frame_free(&dst_frame);
     } else {
+        srcframe->pts = apts;
         pCurAudioFrameIndex += srcframe->nb_samples;
         ret = avcodec_encode_audio2(p_AudioCodecContext, &en_pkt, srcframe, &got_frame);
         if (ret < 0) {
@@ -303,10 +302,9 @@ int EncoderCore::AudioEncode(AVFrame *srcframe)
     
     if (got_frame) {
         en_pkt.stream_index = pAudioStreamIndex;
-//        en_pkt.pts = av_rescale_q(pCurAudioFrameIndex++, p_AudioStream->time_base, p_AudioCodecContext->time_base);
+        en_pkt.duration = av_rescale_q(pDuration, p_AudioCodecContext->time_base, p_AudioStream->time_base);
         en_pkt.dts = en_pkt.pts;
-        en_pkt.duration = pDuration;
-        printf("audio dts = %ld, pts = %d, duration = %d\n",en_pkt.dts, en_pkt.pts, en_pkt.duration);
+        printf("audio dts = %ld, pts = %ld, duration = %d\n",en_pkt.dts, en_pkt.pts, en_pkt.duration);
 
         ret = av_interleaved_write_frame(p_FormatContext, &en_pkt);
         
@@ -370,9 +368,10 @@ int EncoderCore::VideoEncode(AVFrame *srcframe)
     }
     
     if (got_frame) {
-//        printf("video dts = %ld, pts = %d, duration = %d\n",en_pkt.dts, en_pkt.pts, en_pkt.duration);
         en_pkt.stream_index = pVideoStreamIndex;
         en_pkt.duration = pDuration;
+        printf("video dts = %ld, pts = %d, duration = %d\n",en_pkt.dts, en_pkt.pts, en_pkt.duration);
+
         av_interleaved_write_frame(p_FormatContext, &en_pkt);
     }
     
